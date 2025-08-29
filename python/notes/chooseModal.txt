@@ -1,0 +1,25 @@
+Target: G3 (0–20, final exam grade).
+
+Type: Regression problem.
+
+Example models: LinearRegression, RandomForestRegressor, XGBoostRegressor, etc.
+
+Pros: You get the exact predicted grade.
+
+Cons: Harder to get perfect accuracy, especially with limited data.
+
+--------------------------------------------
+
+target is:
+
+1 → Pass (grade ≥ 10)
+
+0 → Fail (grade < 10)
+
+Type: Classification problem.
+
+Example models: LogisticRegression, RandomForestClassifier, XGBoostClassifier, etc.
+
+Pros: Easier, good for risk detection (who might fail).
+
+Cons: Loses granularity — you don’t know if a student got 11 or 19, just pass/fail. 
