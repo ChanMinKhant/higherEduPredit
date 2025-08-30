@@ -7,11 +7,10 @@ This is a machine learning application designed to predict student math performa
 - Regression model: Predicts exact G3 grades (continuous values) with R² score of 0.264 on test data
 - Classification model: Predicts pass/fail outcomes (G3 >= 10) with 68.3% accuracy on test data
 - Models saved as pickle files: regression_model.pkl and classification_model.pkl
-- Console application displays comprehensive performance metrics and feature importance rankings
 
 # User Preferences
 
-Preferred communication style: Simple, everyday language.
+Preferred communication style: Simple, everyday
 
 # System Architecture
 
@@ -49,7 +48,7 @@ The system uses a modular architecture with separation of concerns:
 ## Data Requirements
 - **Input Format**: CSV file containing student performance data
 - **Required Columns**: Expects 'G3' column for final grade target variable
-- **File Location**: Configured to read from 'attached_assets/cleaned-mat-data_1756443115411.csv'
+- **File Location**: Configured to read from 'attached_assets/cleaned-data_1756443115411.csv' 
 
 ## Python Environment
 - **Python 3.x**: Required for modern syntax and library compatibility

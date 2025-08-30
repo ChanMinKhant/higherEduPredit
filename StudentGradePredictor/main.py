@@ -13,8 +13,8 @@ def main():
     """Main function to run the machine learning pipeline"""
     
     # File path for the CSV data
-    csv_file_path = "attached_assets/cleaned-mat-data_1756443115411.csv"
-    
+    csv_file_path = "attached_assets/combined-data-withG12.csv"
+
     print("=" * 60)
     print("Student Math Performance - ML Model Training")
     print("=" * 60)

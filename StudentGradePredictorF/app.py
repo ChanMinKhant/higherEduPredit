@@ -18,7 +18,14 @@ import warnings
 warnings.filterwarnings('ignore')
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True, resources={
+    r"/api/*": {
+        "origins": [
+            "http://localhost:3000",
+            "http://localhost:5173"
+        ]
+    }
+})
 # Setup
 # Global variables for models and data
 regression_model = None
@@ -363,6 +370,6 @@ if __name__ == '__main__':
     print("Loading models...")
     if load_models():
         print("Models loaded successfully!")
-        app.run(host='0.0.0.0', port=5000, debug=True)
+        app.run(host='0.0.0.0', port=5000, debug=False)
     else:
         print("Failed to load models. Please train models first.")

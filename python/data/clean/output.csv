@@ -1,0 +1,11 @@
+sex,age,famsize,Pstatus,Medu,Fedu,traveltime,studytime,failures,schoolsup,famsup,paid,higher,internet,romantic,famrel,freetime,goout,health,absences,G1,G2,G3,Mjob_at_home,Mjob_health,Mjob_other,Mjob_services,Mjob_teacher,Fjob_at_home,Fjob_health,Fjob_other,Fjob_services,Fjob_teacher,guardian_father,guardian_mother,guardian_other
+0,18,1,0,4,4,2,2,0,1,0,0,1,0,0,4,3,4,3,6,6.0,6.0,6.0,True,False,False,False,False,False,False,False,False,True,False,True,False
+0,17,1,1,1,1,1,2,0,0,1,0,1,1,0,5,3,3,3,4,5.0,5.0,6.0,True,False,False,False,False,False,False,True,False,False,True,False,False
+0,15,0,1,1,1,1,2,3,1,0,1,1,1,0,4,3,2,3,10,7.0,8.0,7.0,True,False,False,False,False,False,False,True,False,False,False,True,False
+0,15,1,1,4,2,1,3,0,0,1,1,1,1,1,3,2,2,5,2,15.0,15.0,15.0,False,True,False,False,False,False,False,False,True,False,False,True,False
+0,16,1,1,3,3,1,2,0,0,1,1,1,0,0,4,3,2,5,4,10.0,10.0,10.0,False,False,True,False,False,False,False,True,False,False,True,False,False
+1,16,0,1,4,3,1,2,0,0,1,1,1,1,0,5,4,2,5,10,15.0,15.0,15.0,False,False,False,True,False,False,False,True,False,False,False,True,False
+1,16,0,1,2,2,1,2,0,0,0,0,1,1,0,4,4,4,3,0,11.0,11.0,11.0,False,False,True,False,False,False,False,True,False,False,False,True,False
+0,17,1,0,4,4,2,2,0,1,1,0,1,0,0,4,1,4,1,6,6.0,5.0,6.0,False,False,True,False,False,False,False,False,False,True,False,True,False
+1,15,0,0,3,2,1,2,0,0,1,1,1,1,0,4,2,2,1,0,16.0,17.0,19.0,False,False,False,True,False,False,False,True,False,False,False,True,False
+1,15,1,1,3,4,1,2,0,0,1,1,1,1,0,5,5,1,5,0,14.0,15.0,15.0,False,False,True,False,False,False,False,True,False,False,False,True,False
