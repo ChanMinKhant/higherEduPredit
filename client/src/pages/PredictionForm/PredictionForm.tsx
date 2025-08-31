@@ -122,6 +122,7 @@ const PredictionForm: React.FC = () => {
   };
 
   const renderField = (field: FormField) => {
+    console.log(field);
     if (field.type === 'select') {
       return (
         <select
@@ -142,7 +143,6 @@ const PredictionForm: React.FC = () => {
         <input
           type="number"
           id={field.name}
-          value={field.min}
           onChange={(e) => handleInputChange(field.name, Number(e.target.value))}
           min={field.min}
           max={field.max}
@@ -168,7 +168,8 @@ const PredictionForm: React.FC = () => {
       education: fields.slice(4, 9),
       support: fields.slice(9, 15),
       personal: fields.slice(15, 20),
-      family: fields.slice(20)
+      family: fields.slice(20,23),
+      academic: fields.slice(23, 25)
     };
     return groups;
   };
@@ -235,6 +236,18 @@ const PredictionForm: React.FC = () => {
             <h3>Family Information</h3>
             <div className="form-row">
               {fieldGroups.family.map(field => (
+                <div key={field.name} className="form-field">
+                  <label htmlFor={field.name}>{field.label}</label>
+                  {renderField(field)}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <h3>Academic Information</h3>
+            <div className="form-row">
+              {fieldGroups.academic.map(field => (
                 <div key={field.name} className="form-field">
                   <label htmlFor={field.name}>{field.label}</label>
                   {renderField(field)}

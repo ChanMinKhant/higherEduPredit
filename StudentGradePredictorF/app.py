@@ -15,6 +15,7 @@ from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, r2_score
 import warnings 
+import json
 warnings.filterwarnings('ignore')
 
 app = Flask(__name__)
@@ -47,7 +48,7 @@ def load_models():
             classification_model = pickle.load(f)
         
         # Load training data for scaler setup
-        csv_file_path = "attached_assets/cleaned-mat-data_1756443115411.csv"
+        csv_file_path = "attached_assets/combined-data-withG12-mean.csv"
         training_data = pd.read_csv(csv_file_path)
         
         # Setup feature columns and scaler
@@ -87,10 +88,9 @@ def health_check():
 @app.route('/api/predict', methods=['POST'])
 def predict():
     """Make predictions for a student"""
-    print(request.get_json())
+    print(json.dumps(request.get_json(), indent=2, ensure_ascii=False))
     try:
         data = request.get_json()
-        print(data['failures'])
         if not data:
             return jsonify({'error': 'No data provided'}), 400
         
@@ -370,7 +370,14 @@ def form_structure():
             {'value': 'other', 'label': 'Other'}
         ]}
     ])
-    
+
+    if(True):
+        # For testing, add G1 and G2 fields
+        form_fields.extend([
+            {'name': 'G1', 'type': 'number', 'label': 'First Period Grade(0-20)', 'min': 0, 'max': 20},
+            {'name': 'G2', 'type': 'number', 'label': 'Second Period Grade(0-20)', 'min': 0, 'max': 20}
+        ])
+
     return jsonify({'fields': form_fields})
 
 # Initialize models on startup
