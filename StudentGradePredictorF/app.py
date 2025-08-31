@@ -87,9 +87,10 @@ def health_check():
 @app.route('/api/predict', methods=['POST'])
 def predict():
     """Make predictions for a student"""
+    print(request.get_json())
     try:
         data = request.get_json()
-        
+        print(data['failures'])
         if not data:
             return jsonify({'error': 'No data provided'}), 400
         
@@ -306,7 +307,14 @@ def form_structure():
             {'value': 1, 'label': '< 2 hours'}, {'value': 2, 'label': '2-5 hours'}, 
             {'value': 3, 'label': '5-10 hours'}, {'value': 4, 'label': '> 10 hours'}
         ]},
-        {'name': 'failures', 'type': 'number', 'label': 'Past Class Failures', 'min': 0, 'max': 4},
+        {'name': 'failures', 'type': 'select', 'label': 'Past Class Failures', 'options': [
+            {'value': 0, 'label': '0 (None)'},
+            {'value': 1, 'label': '1'},
+            {'value': 2, 'label': '2'},
+            {'value': 3, 'label': '3'},
+            {'value': 4, 'label': '4 or more'}
+        ]},
+        # {'name': 'failures', 'type': 'number', 'label': 'Past Class Failures', 'min': 0, 'max': 4},
         {'name': 'schoolsup', 'type': 'select', 'label': 'School Support', 'options': [
             {'value': 0, 'label': 'No'}, {'value': 1, 'label': 'Yes'}
         ]},
@@ -341,7 +349,7 @@ def form_structure():
             {'value': 1, 'label': 'Very Bad'}, {'value': 2, 'label': 'Bad'}, 
             {'value': 3, 'label': 'Average'}, {'value': 4, 'label': 'Good'}, {'value': 5, 'label': 'Very Good'}
         ]},
-        {'name': 'absences', 'type': 'number', 'label': 'School Absences', 'min': 0, 'max': 93}
+        {'name': 'absences', 'type': 'number', 'label': 'School Absences (0 - 93)', 'min': 0, 'max': 93},
     ]
     
     # Add job fields

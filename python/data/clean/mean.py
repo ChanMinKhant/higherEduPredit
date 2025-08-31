@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 
-csv_input= 'test.csv'
-csv_output= 'output.csv'
+csv_input= 'combined-data-withG12.csv'
+csv_output= 'combined-data-withG12-mean.csv'
 
 df = pd.read_csv(csv_input, sep=',')
 print(df.head(5))

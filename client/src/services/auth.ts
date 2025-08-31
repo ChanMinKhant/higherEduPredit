@@ -1,4 +1,4 @@
-import apiService from './api';
+import apiService from './nodeApi';
 
 const authBaseUrl = 'auth';
 

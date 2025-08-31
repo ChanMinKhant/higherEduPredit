@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import './PredictionForm.css';
 import PredictionResult from '../../components/PredictionResult';
+import { getFormStructure, predict } from '../../services/predict';
 
 interface FormField {
   name: string;
@@ -31,7 +31,7 @@ const PredictionForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
-  const API_BASE = 'http://localhost:5000/api';
+  
 
   useEffect(() => {
     fetchFormStructure();
@@ -39,12 +39,13 @@ const PredictionForm: React.FC = () => {
 
   const fetchFormStructure = async () => {
     try {
-      const response = await axios.get(`${API_BASE}/form/structure`);
-      setFormFields(response.data.fields);
+      const response = await getFormStructure();
+      setFormFields(response.fields);
+      console.log(response);
       
       // Initialize form data with default values
       const initialData: FormData = {};
-      response.data.fields.forEach((field: FormField) => {
+      response.fields.forEach((field: FormField) => {
         if (field.type === 'number') {
           initialData[field.name] = field.min || 0;
         } else if (field.type === 'select' && field.options && field.options.length > 0) {
@@ -110,8 +111,8 @@ const PredictionForm: React.FC = () => {
 
     try {
       const apiData = convertFormDataForAPI(formData);
-      const response = await axios.post(`${API_BASE}/predict`, apiData);
-      setPrediction(response.data);
+      const response = await predict(apiData);
+      setPrediction(response);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to get prediction');
       console.error('Prediction error:', err);
@@ -141,7 +142,7 @@ const PredictionForm: React.FC = () => {
         <input
           type="number"
           id={field.name}
-          value={formData[field.name] || ''}
+          value={field.min}
           onChange={(e) => handleInputChange(field.name, Number(e.target.value))}
           min={field.min}
           max={field.max}

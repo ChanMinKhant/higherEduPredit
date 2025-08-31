@@ -1,0 +1,15 @@
+train 3 model => 
+    no grade 
+    1st Period Grade 
+    2nd Period Grade
+
+use both Regression and Classification
+
+main is Classification
+but admin can control if they want to predit also Grade score.
+
+show only one output depends on admin choice. 
+
+=======
+
+for user we can also choice predict depends only on admin choice or user choice. (user choice might be risky)
