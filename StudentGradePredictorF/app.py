@@ -33,12 +33,13 @@ regression_model = None
 classification_model = None
 scaler = None
 feature_columns = None
+feature_columns_higher = None
 training_data = None
 
 def load_models():
     """Load trained models and setup data"""
-    global regression_model, classification_model, scaler, feature_columns, training_data
-    
+    global regression_model, classification_model, scaler, feature_columns, feature_columns_higher, training_data
+
     try:
         # Load models
         with open('regression_model.pkl', 'rb') as f:
@@ -48,13 +49,14 @@ def load_models():
             classification_model = pickle.load(f)
         
         # Load training data for scaler setup
-        csv_file_path = "attached_assets/combined-data-withG12-mean.csv"
+        csv_file_path = "attached_assets/cleaned-por-data-withG12.csv"
         training_data = pd.read_csv(csv_file_path)
         
         # Setup feature columns and scaler
         feature_columns = [col for col in training_data.columns if col != 'G3']
         X_original = training_data[feature_columns]
-        
+
+        feature_columns_higher = training_data.columns.tolist()
         scaler = StandardScaler()
         scaler.fit(X_original)
         
@@ -75,6 +77,7 @@ def prepare_input_for_prediction(student_data):
         
         return X_scaled
     except Exception as e:
+        print(f"Error preparing input data: {str(e)}")
         raise Exception(f"Error preparing input data: {str(e)}")
 
 @app.route('/api/health', methods=['GET'])
@@ -110,19 +113,40 @@ def predict():
         predicted_grade = float(regression_model.predict(X_scaled)[0])
         predicted_class = int(classification_model.predict(X_scaled)[0])
         predicted_prob = classification_model.predict_proba(X_scaled)[0].tolist()
-        
-        # Prepare response
+        data['G3'] = round(predicted_grade, 2)
+        # reorder columns
+        ordered_data = {col: data[col] for col in feature_columns_higher if col in data}
+        print(json.dumps(ordered_data, indent=2, ensure_ascii=False))
+        with open('./StudentUplift/student_education_model.pkl', 'rb') as f:
+            higher_model = pickle.load(f)
+
+        # Load metrics (optional)
+        with open('./StudentUplift/model_metrics.pkl', 'rb') as f:
+            higher_metrics = pickle.load(f)
+
+        higher_X_new = pd.DataFrame([ordered_data])
+        higher_predictions = higher_model.predict(higher_X_new)
+        higher_metrics = higher_model.predict_proba(higher_X_new)
+        print("Higher Predictions:", higher_predictions)
+        print("Higher Probabilities:", higher_metrics)
+        threadhole = 0.65
+        higher_predictions = [1 if prob[1] > threadhole else 0 for prob in higher_metrics]
+        print("Higher Predictions:", higher_predictions)    
         result = {
             'predicted_grade': round(predicted_grade, 2),
             'pass_fail': 'pass' if predicted_class == 1 else 'fail',
             'probability_fail': round(predicted_prob[0], 3),
             'probability_pass': round(predicted_prob[1], 3),
-            'confidence': 'high' if max(predicted_prob) > 0.7 else 'moderate' if max(predicted_prob) > 0.5 else 'low'
+            'confidence': 'high' if max(predicted_prob) > 0.7 else 'moderate' if max(predicted_prob) > 0.5 else 'low',
+            'higher_education': 'yes' if higher_predictions[0] == 1 else 'no',
+            'higher_education_yes': round(higher_metrics[0][1] * 100, 3),
+            'higher_education_no': round(higher_metrics[0][0] * 100, 3)
         }
         
         return jsonify(result)
         
     except Exception as e:
+        print(f"Prediction error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/model/info', methods=['GET'])
@@ -324,9 +348,9 @@ def form_structure():
         {'name': 'paid', 'type': 'select', 'label': 'Paid Classes', 'options': [
             {'value': 0, 'label': 'No'}, {'value': 1, 'label': 'Yes'}
         ]},
-        {'name': 'higher', 'type': 'select', 'label': 'Wants Higher Education', 'options': [
-            {'value': 0, 'label': 'No'}, {'value': 1, 'label': 'Yes'}
-        ]},
+        # {'name': 'higher', 'type': 'select', 'label': 'Wants Higher Education', 'options': [
+        #     {'value': 0, 'label': 'No'}, {'value': 1, 'label': 'Yes'}
+        # ]},
         {'name': 'internet', 'type': 'select', 'label': 'Internet Access', 'options': [
             {'value': 0, 'label': 'No'}, {'value': 1, 'label': 'Yes'}
         ]},

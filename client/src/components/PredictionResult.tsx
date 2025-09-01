@@ -8,6 +8,9 @@ interface PredictionResultProps {
     probability_fail: number;
     probability_pass: number;
     confidence: string;
+    higher_education: string;
+    higher_education_yes: number;
+    higher_education_no: number;
   };
 }
 
@@ -17,7 +20,7 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
     if (grade >= 10) return '#f39c12';
     return '#e74c3c';
   };
-
+  console.log(prediction);
   const getConfidenceColor = (confidence: string) => {
     switch (confidence) {
       case 'high': return '#27ae60';
@@ -25,6 +28,12 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
       case 'low': return '#e74c3c';
       default: return '#95a5a6';
     }
+  };
+
+  const getHigherEducationColor = (value: number) => {
+    if (value == 1) return '#27ae60';
+    if (value == 0) return '#f39c12';
+    return '#e74c3c';
   };
 
   return (
@@ -89,7 +98,30 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
             </div>
           </div>
         </div>
+
+        {/* higher education card use also color */}
+        <div className="result-card higher-education-card">
+          <h3>Higher Education Prediction</h3>
+          <div className={`higher-education-value ${prediction.higher_education}`}>
+            {prediction.higher_education.toUpperCase()}
+          </div>
+          <div className="higher-education-details">
+            <div className="higher-education-item">
+              <span>Yes: </span>
+              <span className="higher-education-value yes">
+                {prediction.higher_education_yes}%
+              </span>
+            </div>
+            <div className="higher-education-item">
+              <span>No: </span>
+              <span className="higher-education-value no">
+                {prediction.higher_education_no}%
+              </span>
+            </div>
+          </div>  
+        </div>
       </div>
+
 
       <div className="interpretation">
         <h3>Interpretation</h3>

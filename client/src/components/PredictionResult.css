@@ -9,6 +9,13 @@
   padding-bottom: 0.5rem;
 }
 
+.higher-education-card {
+  border-left-color: #8e44ad;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
 .result-cards {
   display: flex;
   flex-direction: column;
@@ -89,6 +96,8 @@
   display: flex;
   justify-content: space-between;
 }
+
+.higher-education-card
 
 .prob-item {
   display: flex;
