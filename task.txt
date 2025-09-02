@@ -1,0 +1,9 @@
+write backend => {
+    add predict data,
+    crud,
+    Admin control, 
+    user crud,
+    model difficulty,
+    score base (20, 40, 100, etc)
+    
+}

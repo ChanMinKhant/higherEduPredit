@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import CustomError from '../middlewares/CustomError.js'; 
 import axios from 'axios';
+import Prediction from '../modals/prediction.js';
 
 // call api to python server 
 
@@ -18,13 +19,20 @@ export const getPrediction = asyncHandler(async (req, res, next) => {
         },
       }
     );
+    console.log(response.data)
+    // res.status(200).json(response.data)
 
-    if (!response.ok) {
+    // save to database
+    const prediction = new Prediction({
+      userId: req.userId,
+      ...req.body,
+      result: response.data
+    });
+    await prediction.save();
+    if (response.status < 200 || response.status >= 300) {
       throw new CustomError('Failed to get prediction from Python server', 500);
     }
-
-    const data = await response.json();
-    res.status(200).json(data);
+    res.status(200).json(response.data);
   } catch (error) {
     next(error);
   }

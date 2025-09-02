@@ -122,7 +122,6 @@ const PredictionForm: React.FC = () => {
   };
 
   const renderField = (field: FormField) => {
-    console.log(field);
     if (field.type === 'select') {
       return (
         <select

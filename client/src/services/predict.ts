@@ -1,5 +1,5 @@
 import apiService from './pythonApi';
-
+import api from './nodeApi';
 // Health check
 export const health = async () => {
   try {
@@ -13,9 +13,10 @@ export const health = async () => {
 // Predict student performance
 export const predict = async (studentData: any) => {
   try {
-    const response = await apiService.post('/predict', studentData);
+    const response = await api.post('/ml/predict', studentData);
     return response.data;
   } catch (error: any) {
+    console.log(error.response);
     throw error.response || error;
   }
 };
