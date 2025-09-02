@@ -30,9 +30,9 @@ export const register = asyncHandler(async (req, res, next) => {
         email,
         password: hashedPassword,
     });
-
+    console.log(user)
     // Generate JWT
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || '12345', {
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || '12345', {
         expiresIn: '7d',
     });
 
@@ -79,7 +79,7 @@ export const login = asyncHandler(async (req, res, next) => {
     }
 
     // Generate JWT
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || '12345', {
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || '12345', {
         expiresIn: '7d',
     });
 

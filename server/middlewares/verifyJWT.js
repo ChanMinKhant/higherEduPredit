@@ -17,6 +17,7 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
       return next(error);
     }
     req.userId = decodedToken.id;
+    req.role = decodedToken.role;
     next();
   });
 });
