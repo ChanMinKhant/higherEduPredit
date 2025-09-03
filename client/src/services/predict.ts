@@ -21,6 +21,15 @@ export const predict = async (studentData: any) => {
   }
 };
 
+export const getRecentPredictions = async (userId: string) => {
+  try {
+    const response = await api.get(`/ml/predict/recent?userId=${userId}`);
+    return response.data;
+  } catch (error: any) {
+    throw error.response || error;
+  }
+};
+
 // Get model info
 export const getModelInfo = async () => {
   try {

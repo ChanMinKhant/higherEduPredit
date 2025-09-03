@@ -5,6 +5,8 @@ import Navbar from './components/Navbar';
 import Register from './pages/Register/Register';
 import Login from './pages/Login/Login';
 import PredictionForm from './pages/PredictionForm/PredictionForm';
+import RecentPrediction from './pages/RecentPrediction/RecentPrediction';
+import UserManage from './pages/UserManage/UserMange';
 
 function App() {
   return (
@@ -17,6 +19,9 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<PredictionForm />} />
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/predictions" element={<RecentPrediction />} />
+            <Route path="/users" element={<UserManage />} />
+            <Route path="*" element={<h1>404 - Not Found</h1>} />
           </Routes>
         </main>
       </div>

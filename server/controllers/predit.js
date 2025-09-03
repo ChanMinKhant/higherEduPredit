@@ -41,10 +41,9 @@ export const makePrediction = asyncHandler(async (req, res, next) => {
 
 export const getPredictionHistory = asyncHandler(async (req, res, next) => {
   try {
-    if (req.role !== 'admin' && req.userId !== req.params.userId) {
-      throw new CustomError('Not authorized to access this resource', 403);
-    }
-    const predictions = await Prediction.find({ userId: req.params.userId });
+    console.log('hi')
+
+    const predictions = await Prediction.find({ userId: req.userId });
     res.status(200).json(predictions);
 
   } catch (error) {

@@ -39,6 +39,8 @@ interface RetrainParams {
   max_depth: number;
   min_samples_split: number;
   min_samples_leaf: number;
+  difficulty?: number;
+  basedScore?: number;
 }
 
 const AdminPanel: React.FC = () => {
@@ -48,7 +50,9 @@ const AdminPanel: React.FC = () => {
     n_estimators: 100,
     max_depth: 10,
     min_samples_split: 5,
-    min_samples_leaf: 2
+    min_samples_leaf: 2,
+    difficulty: 0.5,
+    basedScore: 20,
   });
   const [retraining, setRetraining] = useState(false);
   const [message, setMessage] = useState<string>('');
@@ -212,6 +216,37 @@ const AdminPanel: React.FC = () => {
                 <span className="param-value">{retrainParams.min_samples_leaf}</span>
                 <small>Minimum samples required at each leaf node</small>
               </div>
+
+              {/* difficulty 0.1 to 0.9 default 0.5 */}
+              <div className="param-group">
+                <label>Difficulty</label>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="0.9"
+                  step="0.1"
+                  value={retrainParams.difficulty}
+                  onChange={(e) => handleParamChange('difficulty', Number(e.target.value))}
+                />
+                <span className="param-value">{retrainParams.difficulty}</span>
+                <small>Controls the difficulty of the training data</small>
+              </div>
+
+              {/* basedScore 1 to 100, default 20 */}
+              <div className="param-group">
+                <label>Based Score</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  step="1"
+                  value={retrainParams.basedScore}
+                  onChange={(e) => handleParamChange('basedScore', Number(e.target.value))}
+                />
+                <span className="param-value">{retrainParams.basedScore}</span>
+                <small>Controls the based score of the training data</small>
+              </div>
+
             </div>
 
             <button

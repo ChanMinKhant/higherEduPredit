@@ -7,11 +7,11 @@ import CustomError from '../middlewares/CustomError.js';
 export const register = asyncHandler(async (req, res, next) => {
     console.log(process.env.JWT_SECRET);
     const { username, email, password } = req.body;
-
+    console.log(req.body);
     // Simple validation
     if (!username || !email || !password) {
         res.status(400);
-        throw new CustomError('Please provide email and password', 400);
+        throw new CustomError('Please provide username, email and password', 400);
     }
 
     // Check if user already exists (replace with your User model)
@@ -103,24 +103,104 @@ export const login = asyncHandler(async (req, res, next) => {
 });
 
 export const getProfile = asyncHandler(async (req, res, next) => {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.userId).select('-password');
     if (!user) {
         res.status(404);
         throw new CustomError('User not found', 404);
     }
     res.status(200).json({
         success: true,
-        user: {
-            id: user._id,
-            email: user.email,
-        },
+        user
     });
 });
 
-export const getUsers = asyncHandler(async (req, res, next) => {
+export const getAllUsers = asyncHandler(async (req, res, next) => {
+    if (req.role !== 'admin') {
+        // Only admin can access this route
+        throw new CustomError('Not authorized to access this resource', 403);
+    }
     const users = await User.find().select('-password').lean();
     res.status(200).json({
         success: true,
         users,
+    });
+});
+
+export const createUser = asyncHandler(async (req, res, next) => {
+    if (req.role !== 'admin') {
+        // Only admin can access this route
+        throw new CustomError('Not authorized to access this resource', 403);
+    }
+    const { username, email, password, role } = req.body;
+    // Simple validation
+    if (!username || !email || !password || !role) {
+        res.status(400);
+        throw new CustomError('Please provide username, email, password and role', 400);
+    }
+    // Check if user already exists (replace with your User model)
+    const existingUser = await User.findOne({ email });
+    console.log(existingUser)
+    if (existingUser) {
+        res.status(400);
+        throw new Error('User already exists');
+    }
+    // Hash password (using bcrypt)
+    const hashedPassword = await bcrypt.hash(password, 10);
+    // Create user (replace with your User model)
+    const user = await User.create({
+        username,
+        email,
+        password: hashedPassword,
+        role,
+    });
+    res.status(201).json({
+        success: true,
+        user
+    });
+});
+
+export const deleteUser = asyncHandler(async (req, res, next) => {
+    console.log('delete')
+    if (req.role !== 'admin') {
+        throw new CustomError('Not authorized to access this resource', 403);
+    }
+    const user = await User.findById(req.params.id);
+    if (!user) {
+        res.status(404);
+        throw new CustomError('User not found', 404);
+    }
+    await user.deleteOne();
+    res.status(204).json({
+        success: true,
+        message: 'User deleted successfully'
+    });
+});
+
+export const updateUser = asyncHandler(async (req, res, next) => {
+    if (req.role !== 'admin') {
+        throw new CustomError('Not authorized to access this resource', 403);
+    }
+    const user = await User.findById(req.params.id);
+    if (!user) {
+        res.status(404);
+        throw new CustomError('User not found', 404);
+    }
+    const { username, email, password, role } = req.body;
+    // Simple validation
+    if (!username || !email || !password || !role) {
+        res.status(400);
+        throw new CustomError('Please provide username, email, password and role', 400);
+    }
+    // Hash password (using bcrypt)
+    const hashedPassword = await bcrypt.hash(password, 10);
+    // Update user (replace with your User model)
+    user.username = username;
+    user.email = email;
+    user.password = hashedPassword;
+    user.role = role;
+    await user.save();
+    res.status(200).json({
+        success: true,
+        user
     });
 });
