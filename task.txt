@@ -12,11 +12,12 @@ write backend => {
     refine retrain for regression,
     refine nav bar, Done
     protect route, Done
-    show error message, 
-    refine user page,
-    admin can watch user's prediction,
+    show error message, Done
+    refine user page, Done
+    admin can watch user's prediction, Done
     retrain also for higher predication,
     recalculate data,
-    add logout, 
+    add logout, Done
     show loading, 
+    add threadhole
 }

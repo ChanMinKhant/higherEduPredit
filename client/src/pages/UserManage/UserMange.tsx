@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getAllUsers, createUser, updateUser, deleteUser } from '../../services/auth';
 import { useUser } from '../../hooks/useUser';
 import './UserManage.css'
+import { Link } from 'react-router-dom';
 
 const UserManage: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -140,27 +141,30 @@ const UserManage: React.FC = () => {
         <p className="loading">Loading users...</p>
       ) : users.length > 0 ? (
         <div className="user-list">
-          {users.map((u: any) => (
-            <div key={u._id} className="user-card">
-              <div>
-                <h3>{u.username}</h3>
-                <p>{u.email}</p>
-                <p className="role">Role: {u.role}</p>
-              </div>
-              <div className="actions">
-                <button onClick={() => handleEdit(u)} className="btn secondary">
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(u._id)}
-                  className="btn danger"
-                  disabled={currentAdmin && currentAdmin._id === u._id}
-                >
-                  Delete
-                </button>
-              </div>
+         {users.map((u: any) => (
+          <div key={u._id} className="user-card">
+            <div>
+              <h3>{u.username}</h3>
+              <p>{u.email}</p>
+              <p className="role">Role: {u.role}</p>
             </div>
-          ))}
+            <div className="actions">
+              {/* link predictions/123 */}
+              <Link to={`/predictions/${u._id}`} className="btn primary" >result</Link> 
+              <button onClick={() => handleEdit(u)} className="btn secondary">
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(u._id)}
+                className="btn danger"
+                disabled={currentAdmin && currentAdmin._id === u._id}
+              >
+                Delete
+              </button>
+            </div>
+         </div>
+))}
+
         </div>
       ) : (
         <p className="empty">No users found.</p>

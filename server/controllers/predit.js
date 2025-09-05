@@ -43,7 +43,7 @@ export const makePrediction = asyncHandler(async (req, res, next) => {
 export const getPredictionHistory = asyncHandler(async (req, res, next) => {
   try {
 
-    const predictions = await Prediction.find({ userId: req.userId });
+    const predictions = await Prediction.find({ userId: req.query.userId });
     res.status(200).json(predictions);
 
   } catch (error) {

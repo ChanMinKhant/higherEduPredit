@@ -23,6 +23,7 @@ export const predict = async (studentData: any) => {
 
 export const getRecentPredictions = async (userId: string) => {
   try {
+    console.log('abd')
     const response = await api.get(`/ml/predict/recent?userId=${userId}`);
     return response.data;
   } catch (error: any) {

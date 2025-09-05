@@ -18,11 +18,13 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<div>Home</div>} />
+            
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/predict" element={<PredictionForm />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/predictions" element={<RecentPrediction />} />
+            <Route path="/predictions/:userid" element={<RecentPrediction />} />
             <Route path="/users" element={<UserManage />} />
             <Route path="*" element={<h1>404 - Not Found</h1>} />
           </Routes>
