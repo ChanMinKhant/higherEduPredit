@@ -93,6 +93,7 @@ const AdminPanel: React.FC = () => {
     try {
       const response = await axios.get(`${API_BASE}/model/info`);
       setModelInfo(response.data);
+      console.log(response.data)
     } catch (error) {
       console.error("Error fetching model info:", error);
       showMessage("Failed to load model information", "error");
@@ -127,12 +128,12 @@ const AdminPanel: React.FC = () => {
         `${API_BASE}/admin/retrain`,
         retrainParams
       );
-
+      console.log(response.data)
       showMessage(
-        `Models retrained successfully! Regression R²: ${response.data?.performance?.regression_r2}, Classification Accuracy: ${response.data?.performance?.classification_accuracy}`,
+        `Models retrained successfully! Classification Accuracy: ${response.data?.performance?.classification_accuracy} \n Classification Accuracy (higher): ${response.data?.performance?.higher_accuracy}`,
         "success"
       );
-      toast.update(id, { render:  `Models retrained successfully! Regression R²: ${response.data?.performance?.regression_r2}, Classification Accuracy: ${response.data?.performance?.classification_accuracy}`,
+      toast.update(id, { render:  `Models retrained successfully! Classification Accuracy: ${response.data?.performance?.classification_accuracy} \n Classification Accuracy (higher): ${response.data?.performance?.higher_accuracy}`,
          type: "success", isLoading: false,  autoClose: 5000, });
       await createConfig(retrainParams);
       await fetchModelInfo();
@@ -221,6 +222,7 @@ const AdminPanel: React.FC = () => {
                 <span className="param-value">
                   {retrainParams.n_estimators}
                 </span>
+                <small>Higher values = more complex model, better accuracy but slower training</small>
               </div>
 
               <div className="param-group">
@@ -236,6 +238,7 @@ const AdminPanel: React.FC = () => {
                   }
                 />
                 <span className="param-value">{retrainParams.max_depth}</span>
+                <small>Controls how deep each tree can grow (overfitting prevention)</small>
               </div>
 
               <div className="param-group">
@@ -253,6 +256,7 @@ const AdminPanel: React.FC = () => {
                 <span className="param-value">
                   {retrainParams.min_samples_split}
                 </span>
+                <small>Minimum samples required to split a node</small>
               </div>
 
               <div className="param-group">
@@ -270,6 +274,7 @@ const AdminPanel: React.FC = () => {
                 <span className="param-value">
                   {retrainParams.min_samples_leaf}
                 </span>
+                <small>Minimum samples required at each leaf node</small>
               </div>
 
               <div className="param-group">
@@ -285,6 +290,7 @@ const AdminPanel: React.FC = () => {
                   }
                 />
                 <span className="param-value">{retrainParams.difficulty}</span>
+                <small>Higher values correspond to lower pass rates</small>
               </div>
 
               <div className="param-group">
@@ -300,6 +306,7 @@ const AdminPanel: React.FC = () => {
                   }
                 />
                 <span className="param-value">{retrainParams.basedScore}</span>
+                <small>Maximum scored</small>
               </div>
             </div>
 
@@ -318,7 +325,7 @@ const AdminPanel: React.FC = () => {
           <h2>Current Model Information</h2>
           {modelInfo ? (
             <div className="model-info">
-              <div className="model-details">
+              {/* <div className="model-details">
                 <h3>Regression Model</h3>
                 <p>
                   <strong>Type:</strong> {modelInfo.regression_model.type}
@@ -350,8 +357,44 @@ const AdminPanel: React.FC = () => {
                     )}
                   </div>
                 </div>
+              </div> */}
+              {/*  */}
+              <div className="model-details">
+                <h3>Classification Model (higher)</h3>
+                <p>
+                  <strong>Type:</strong> {modelInfo.classification_model_higher.type}
+                </p>
+                <p>
+                  <strong>Trees:</strong>{" "}
+                  {modelInfo.classification_model_higher.n_estimators}
+                </p>
+                <p>
+                  <strong>Max Depth:</strong>{" "}
+                  {modelInfo.classification_model_higher.max_depth}
+                </p>
+                <div className="feature-importance">
+                  <h4>Top Features (Classification)</h4>
+                  <div className="importance-list">
+                    {modelInfo.classification_model_higher.feature_importance.map(
+                      ([feature, importance]) => (
+                        <div key={feature} className="importance-item">
+                          <span className="feature-name">{feature}</span>
+                          <div className="importance-bar">
+                            <div
+                              className="importance-fill"
+                              style={{ width: `${importance * 100}%` }}
+                            />
+                          </div>
+                          <span className="importance-value">
+                            {(importance * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
               </div>
-
+              {/*  */}
               <div className="model-details">
                 <h3>Classification Model</h3>
                 <p>

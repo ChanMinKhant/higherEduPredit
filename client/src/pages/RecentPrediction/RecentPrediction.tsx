@@ -58,7 +58,7 @@ export default function RecentPrediction() {
           {predictions.map((p: any) => (
             <div
               key={p._id}
-              className="flex justify-center rounded-2xl shadow-sm hover:shadow-md transition h-[200px] w-[400px] border border-gray-200 bg-white"
+              className="flex justify-center rounded-2xl shadow-sm hover:shadow-md transition h-[200px] w-[360px] border border-gray-200 bg-white"
             >
               <div className="flex flex-col justify-evenly items-stretched w-[90%] m-auto p-4 h-full">
                 <h3 className="text-lg font-semibold mb-2">

@@ -32,14 +32,22 @@ CORS(app, supports_credentials=True, resources={
 # Global variables for models and data
 regression_model = None
 classification_model = None
-scaler = None
+classification_model_higher = None
+
+scaler = None              # for G3 regression/classification
+scaler_higher = None       # for higher classification
+
 feature_columns = None
 feature_columns_higher = None
+
 training_data = None
+training_data_higher = None
 
 def load_models():
     """Load trained models and setup data"""
-    global regression_model, classification_model, scaler, feature_columns, feature_columns_higher, training_data
+    global regression_model, classification_model, classification_model_higher
+    global scaler, scaler_higher, feature_columns, feature_columns_higher
+    global training_data, training_data_higher
 
     try:
         # Load models
@@ -48,18 +56,24 @@ def load_models():
         
         with open('classification_model.pkl', 'rb') as f:
             classification_model = pickle.load(f)
-        
-        # Load training data for scaler setup
-        csv_file_path = "attached_assets/cleaned-por-data-withG12.csv"
-        training_data = pd.read_csv(csv_file_path)
-        
-        # Setup feature columns and scaler
-        feature_columns = [col for col in training_data.columns if col != 'G3']
-        X_original = training_data[feature_columns]
 
-        feature_columns_higher = training_data.columns.tolist()
+        with open('classification_model_higher.pkl', 'rb') as f:
+            classification_model_higher = pickle.load(f)
+        
+        # Load training data
+        training_data = pd.read_csv("attached_assets/cleaned-por-data-withG12.csv")
+        training_data_higher = pd.read_csv("attached_assets/cleaned-por-data-withG12_higher.csv")
+        
+        # Feature columns
+        feature_columns = [col for col in training_data.columns if col != 'G3']
+        feature_columns_higher = [col for col in training_data_higher.columns if col != 'higher']
+        
+        # Fit scalers
         scaler = StandardScaler()
-        scaler.fit(X_original)
+        scaler.fit(training_data[feature_columns])
+
+        scaler_higher = StandardScaler()
+        scaler_higher.fit(training_data_higher[feature_columns_higher])
         
         return True
         
@@ -67,20 +81,23 @@ def load_models():
         print(f"Error loading models: {str(e)}")
         return False
 
-def prepare_input_for_prediction(student_data):
+
+def prepare_input_for_prediction(student_data, target="g3"):
     """Prepare student data for model prediction"""
     try:
-        # Create DataFrame with correct column order
-        df = pd.DataFrame([student_data], columns=feature_columns)
-        
-        # Scale the data
-        X_scaled = scaler.transform(df)
+        if target == "g3":
+            df = pd.DataFrame([student_data], columns=feature_columns)
+            X_scaled = scaler.transform(df)
+        elif target == "higher":
+            df = pd.DataFrame([student_data], columns=feature_columns_higher)
+            X_scaled = scaler_higher.transform(df)
+        else:
+            raise ValueError("Unknown target type")
         
         return X_scaled
     except Exception as e:
-        print(f"Error preparing input data: {str(e)}")
         raise Exception(f"Error preparing input data: {str(e)}")
-
+    
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
@@ -130,9 +147,23 @@ def predict():
         higher_metrics = higher_model.predict_proba(higher_X_new)
         print("Higher Predictions:", higher_predictions)
         print("Higher Probabilities:", higher_metrics)
-        threadhole = 0.65
-        higher_predictions = [1 if prob[1] > threadhole else 0 for prob in higher_metrics]
-        print("Higher Predictions:", higher_predictions)    
+        threshold = 0.65
+
+        # Binary predictions based on threshold
+        higher_predictions = [1 if prob[1] > threshold else 0 for prob in higher_metrics]
+        print("Higher Predictions:", higher_predictions)
+
+        # Take first prediction’s probabilities
+        yes = round(higher_metrics[0][1] * 100, 3)
+        no = round(100 - yes, 3)
+
+        print("higher_education_yes %:", yes)
+        print("higher_education_no %:", no)
+
+        # Final decision using threshold
+        decision = "Yes" if higher_metrics[0][1] > threshold else "No"
+        print("Final Decision:", decision)
+
         result = {
             'predicted_grade': round(predicted_grade, 2),
             'pass_fail': 'pass' if predicted_class == 1 else 'fail',
@@ -154,16 +185,22 @@ def predict():
 def model_info():
     """Get information about current models"""
     try:
-        if not regression_model or not classification_model:
+        if not regression_model or not classification_model or not classification_model_higher:
             return jsonify({'error': 'Models not loaded'}), 500
         
-        # Get feature importance
-        reg_importance = list(zip(feature_columns, regression_model.feature_importances_))
-        reg_importance.sort(key=lambda x: x[1], reverse=True)
-        
-        cls_importance = list(zip(feature_columns, classification_model.feature_importances_))
-        cls_importance.sort(key=lambda x: x[1], reverse=True)
-        
+        reg_importance = sorted(
+            zip(feature_columns, regression_model.feature_importances_),
+            key=lambda x: x[1], reverse=True
+        )
+        cls_importance = sorted(
+            zip(feature_columns, classification_model.feature_importances_),
+            key=lambda x: x[1], reverse=True
+        )
+        higher_importance = sorted(
+            zip(feature_columns_higher, classification_model_higher.feature_importances_),
+            key=lambda x: x[1], reverse=True
+        )
+
         return jsonify({
             'regression_model': {
                 'type': 'RandomForestRegressor',
@@ -177,7 +214,14 @@ def model_info():
                 'max_depth': classification_model.max_depth,
                 'feature_importance': cls_importance[:10]
             },
-            'feature_columns': feature_columns
+            'classification_model_higher': {
+                'type': 'RandomForestClassifier',
+                'n_estimators': classification_model_higher.n_estimators,
+                'max_depth': classification_model_higher.max_depth,
+                'feature_importance': higher_importance[:10]
+            },
+            'feature_columns': feature_columns,
+            'feature_columns_higher': feature_columns_higher
         })
         
     except Exception as e:
@@ -187,83 +231,93 @@ def model_info():
 def retrain_models():
     """Retrain models with new parameters (Admin only)"""
     try:
-        global regression_model, classification_model
-        
+        global regression_model, classification_model, classification_model_higher
+        global scaler, scaler_higher
+
         data = request.get_json()
         
-        # Get parameters with defaults
+        # Parameters
         n_estimators = data.get('n_estimators', 100)
         max_depth = data.get('max_depth', 10)
         min_samples_split = data.get('min_samples_split', 5)
         min_samples_leaf = data.get('min_samples_leaf', 2)
-        difficulty = data.get('difficulty', 0.5)  # Not used in current logic
-        basedScore = data.get('basedScore', 20)  # Not used in current logic
+        difficulty = data.get('difficulty', 0.5)
+        basedScore = data.get('basedScore', 20)
         
-        # Validate parameters
+        # Validation
         if not (10 <= n_estimators <= 500):
             return jsonify({'error': 'n_estimators must be between 10 and 500'}), 400
-        
         if not (3 <= max_depth <= 50):
             return jsonify({'error': 'max_depth must be between 3 and 50'}), 400
-        # if difficulty is 0.5 passScored would be 10
+
         passScored = basedScore * difficulty
 
-        print("passScored:", passScored, "difficulty:", difficulty, "basedScore:", basedScore)
-        # Prepare training data
-        X = training_data[feature_columns]
+        # === Regression & classification (G3) ===
+        X = training_data[feature_columns].copy()
         X['G1'] = training_data['G1'] * (basedScore / 20)
-        X['G2'] = training_data['G2'] * (basedScore / 20)
-        print(X[['G1', 'G2']].head(5))
+        X['G2'] = training_data['G2'] * (basedScore / 20) 
         Y = training_data['G3'] * (basedScore / 20)
         y_regression = Y * (1 - (difficulty - 0.5))
         y_classification = (Y >= passScored).astype(int)
-        print(y_regression.head(5))
-        # Scale features
+
+        scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
-        X_scaled = pd.DataFrame(X_scaled, columns=feature_columns)
-        
-        # Split data
-        X_train, X_test, y_reg_train, y_reg_test = train_test_split(
+
+        # Split
+        X_train_reg, X_test_reg, y_train_reg, y_test_reg = train_test_split(
             X_scaled, y_regression, test_size=0.2, random_state=42
         )
-        X_train_cls, X_test_cls, y_cls_train, y_cls_test = train_test_split(
+        X_train_cls, X_test_cls, y_train_cls, y_test_cls = train_test_split(
             X_scaled, y_classification, test_size=0.2, random_state=42, stratify=y_classification
         )
-        
-        # Train regression model
+
+        # Train regression
         regression_model = RandomForestRegressor(
-            n_estimators=n_estimators,
-            max_depth=max_depth,
-            min_samples_split=min_samples_split,
-            min_samples_leaf=min_samples_leaf,
-            random_state=42,
-            n_jobs=-1
+            n_estimators=n_estimators, max_depth=max_depth,
+            min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf,
+            random_state=42, n_jobs=-1
         )
-        regression_model.fit(X_train, y_reg_train)
-        
-        # Train classification model
+        regression_model.fit(X_train_reg, y_train_reg)
+
+        # Train classification
         classification_model = RandomForestClassifier(
-            n_estimators=n_estimators,
-            max_depth=max_depth,
-            min_samples_split=min_samples_split,
-            min_samples_leaf=min_samples_leaf,
-            class_weight='balanced',
-            random_state=42,
-            n_jobs=-1
+            n_estimators=n_estimators, max_depth=max_depth,
+            min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf,
+            class_weight='balanced', random_state=42, n_jobs=-1
         )
-        classification_model.fit(X_train_cls, y_cls_train)
-        
-        # Calculate performance metrics
-        reg_score = regression_model.score(X_test, y_reg_test)
-        cls_score = classification_model.score(X_test_cls, y_cls_test)
-        
-        # Save new models
+        classification_model.fit(X_train_cls, y_train_cls)
+
+        # === Higher classification ===
+        X_higher = training_data_higher[feature_columns_higher]
+        y_higher = training_data_higher['higher']
+
+        scaler_higher = StandardScaler()
+        X_scaled_higher = scaler_higher.fit_transform(X_higher)
+
+        X_train_h, X_test_h, y_train_h, y_test_h = train_test_split(
+            X_scaled_higher, y_higher, test_size=0.2, random_state=42, stratify=y_higher
+        )
+
+        classification_model_higher = RandomForestClassifier(
+            n_estimators=n_estimators, max_depth=max_depth,
+            min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf,
+            class_weight='balanced', random_state=42, n_jobs=-1
+        )
+        classification_model_higher.fit(X_train_h, y_train_h)
+
+        # Metrics
+        reg_score = regression_model.score(X_test_reg, y_test_reg)
+        cls_score = classification_model.score(X_test_cls, y_test_cls)
+        higher_score = classification_model_higher.score(X_test_h, y_test_h)
+
+        # Save models
         with open('regression_model.pkl', 'wb') as f:
             pickle.dump(regression_model, f)
-        
         with open('classification_model.pkl', 'wb') as f:
             pickle.dump(classification_model, f)
-        
+        with open('classification_model_higher.pkl', 'wb') as f:
+            pickle.dump(classification_model_higher, f)
+
         return jsonify({
             'message': 'Models retrained successfully',
             'parameters': {
@@ -274,7 +328,8 @@ def retrain_models():
             },
             'performance': {
                 'regression_r2': round(reg_score, 4),
-                'classification_accuracy': round(cls_score, 4)
+                'classification_accuracy': round(cls_score, 4),
+                'higher_accuracy': round(higher_score, 4)
             }
         })
         

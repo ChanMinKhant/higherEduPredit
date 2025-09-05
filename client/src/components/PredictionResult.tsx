@@ -24,6 +24,7 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
     min_samples_split: 20,
     n_estimators: 500
   });
+  console.log(prediction)
 
   React.useEffect(() => {
     const fetchBasedScore = async () => {
@@ -67,7 +68,7 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
       <h2>Prediction Results</h2>
       
       <div className="result-cards">
-        <div className="result-card grade-card">
+        {/* <div className="result-card grade-card">
           <h3>Predicted Grade</h3>
           <div 
             className="grade-value"
@@ -84,7 +85,7 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
               }}
             />
           </div>
-        </div>
+        </div> */}
 
         <div className="result-card status-card">
           <h3>Pass/Fail Status</h3>
@@ -152,20 +153,18 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
       <div className="interpretation">
         <h3>Interpretation</h3>
         <div className="interpretation-text">
-          {prediction.predicted_grade >= basedScore / 50 ? (
+          {prediction.pass_fail === "pass" ? (
             <p>
-              ✅ The student is predicted to <strong>pass</strong> with a grade of{' '}
-              <strong>{prediction.predicted_grade.toFixed(1)}/{basedScore}</strong>.
+              ✅ The student is predicted to <strong>pass</strong> the exam{' '}
             </p>
           ) : (
             <p>
-              ❌ The student is predicted to <strong>fail</strong> with a grade of{' '}
-              <strong>{prediction.predicted_grade.toFixed(1)}/20</strong>.
+              ❌ The student is predicted to <strong>fail</strong> the exam
             </p>
           )}
           <p>
             Confidence in this prediction is{' '}
-            <strong style={{ color: getConfidenceColor(prediction.confidence) }}>
+            <strong style={{ color: prediction.pass_fail === "fail" ? "red" : "green" }}>
               {prediction.confidence}
             </strong>{' '}
             ({(Math.max(prediction.probability_pass, prediction.probability_fail) * 100).toFixed(1)}%).

@@ -9,15 +9,15 @@ write backend => {
 }
 
 {
-    refine retrain for regression,
+    refine retrain for regression, Discard 
     refine nav bar, Done
     protect route, Done
     show error message, Done
     refine user page, Done
     admin can watch user's prediction, Done
-    retrain also for higher predication,
-    recalculate data,
+    retrain also for higher predication,Done
+    recalculate data, 
     add logout, Done
     show loading, 
-    add threadhole
+    add threadhole 
 }

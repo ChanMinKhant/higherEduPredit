@@ -7,7 +7,6 @@ import { logout } from '../services/auth';
 const Navbar: React.FC = () => {
   const location = useLocation();
   const { user, loading } = useUser();
-  console.log(user)
 
   const handleLogout = async () => {
     try {
@@ -50,7 +49,7 @@ const Navbar: React.FC = () => {
               to="/users" 
               className={`nav-link ${location.pathname === '/users' ? 'active' : ''}`}
             >
-              User Management
+              Manage User
             </Link>
           )}
 
