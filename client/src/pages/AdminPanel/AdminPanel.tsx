@@ -339,7 +339,7 @@ const AdminPanel: React.FC = () => {
                 <div className="feature-importance">
                   <h4>Top Features (Regression)</h4>
                   <div className="importance-list">
-                    {modelInfo.regression_model.feature_importance.slice(0, 5).map(([feature, importance]) => (
+                    {modelInfo.regression_model.feature_importance.map(([feature, importance]) => (
                       <div key={feature} className="importance-item">
                         <span className="feature-name">{feature}</span>
                         <div className="importance-bar">

@@ -7,3 +7,16 @@ write backend => {
     score base (20, 40, 100, etc)
     
 }
+
+{
+    refine retrain for regression,
+    refine nav bar,
+    protect route,
+    show error message,
+    refine user page,
+    admin can watch user's prediction,
+    retrain also for higher predication,
+    recalculate data,
+    add logout, 
+    show loading, 
+}
