@@ -115,8 +115,12 @@ export const getProfile = asyncHandler(async (req, res, next) => {
 });
 
 export const getAllUsers = asyncHandler(async (req, res, next) => {
-    if (req.role !== 'admin') {
-        // Only admin can access this route
+    const user = await User.findById(req.userId)
+    if (!user) {
+        res.status(404);
+        throw new CustomError('User not found', 404);
+    }
+    if (user?.role !== 'admin') {
         throw new CustomError('Not authorized to access this resource', 403);
     }
     const users = await User.find().select('-password').lean();
@@ -127,10 +131,15 @@ export const getAllUsers = asyncHandler(async (req, res, next) => {
 });
 
 export const createUser = asyncHandler(async (req, res, next) => {
-    if (req.role !== 'admin') {
-        // Only admin can access this route
+    const currentUser = await User.findById(req.userId);
+    if (!currentUser) {
+        res.status(404);
+        throw new CustomError('User not found', 404);
+    }
+    if (currentUser?.role !== 'admin') {
         throw new CustomError('Not authorized to access this resource', 403);
     }
+    
     const { username, email, password, role } = req.body;
     // Simple validation
     if (!username || !email || !password || !role) {
@@ -160,8 +169,8 @@ export const createUser = asyncHandler(async (req, res, next) => {
 });
 
 export const deleteUser = asyncHandler(async (req, res, next) => {
-    console.log('delete')
-    if (req.role !== 'admin') {
+    const currentUser = await User.findById(req.userId);
+    if (!currentUser || currentUser?.role !== 'admin') {
         throw new CustomError('Not authorized to access this resource', 403);
     }
     const user = await User.findById(req.params.id);
@@ -169,6 +178,7 @@ export const deleteUser = asyncHandler(async (req, res, next) => {
         res.status(404);
         throw new CustomError('User not found', 404);
     }
+
     await user.deleteOne();
     res.status(204).json({
         success: true,
@@ -177,30 +187,45 @@ export const deleteUser = asyncHandler(async (req, res, next) => {
 });
 
 export const updateUser = asyncHandler(async (req, res, next) => {
-    if (req.role !== 'admin') {
-        throw new CustomError('Not authorized to access this resource', 403);
-    }
-    const user = await User.findById(req.params.id);
+    
+    const user = await User.findById(req.userId);
     if (!user) {
         res.status(404);
         throw new CustomError('User not found', 404);
     }
-    const { username, email, password, role } = req.body;
-    // Simple validation
-    if (!username || !email || !password || !role) {
-        res.status(400);
-        throw new CustomError('Please provide username, email, password and role', 400);
+    if (user?.role !== 'admin') {
+        throw new CustomError('Not authorized to access this resource', 403);
     }
+    const { username, email, role } = req.body;
+    // Simple validation
+    if (!username || !email || !role) {
+        res.status(400);
+        throw new CustomError('Please provide username, email and role', 400);
+    }
+
+    const updateUser = await User.findById(req.params.id);
     // Hash password (using bcrypt)
-    const hashedPassword = await bcrypt.hash(password, 10);
     // Update user (replace with your User model)
-    user.username = username;
-    user.email = email;
-    user.password = hashedPassword;
-    user.role = role;
-    await user.save();
+    updateUser.username = username;
+    updateUser.email = email;
+    updateUser.role = role;
+    await updateUser.save();
     res.status(200).json({
         success: true,
         user
+    });
+});
+
+export const logout = asyncHandler(async (req, res, next) => {
+    res.cookie('jwt', '', {
+        maxAge: 1,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+    });
+
+    res.status(200).json({
+        success: true,
+        message: 'Logged out successfully',
     });
 });

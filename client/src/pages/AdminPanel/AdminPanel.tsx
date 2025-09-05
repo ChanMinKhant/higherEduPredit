@@ -1,7 +1,9 @@
-import React, { useState, useEffect, use } from 'react';
-import axios from 'axios';
-import './AdminPanel.css';
-import { createConfig, getConfigs } from '../../services/modalConfig';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./AdminPanel.css";
+import { createConfig, getConfigs } from "../../services/modalConfig";
+import { useUser } from "../../hooks/useUser.js";
+import { toast } from "react-toastify";
 
 interface ModelInfo {
   regression_model: {
@@ -45,9 +47,11 @@ interface RetrainParams {
 }
 
 const AdminPanel: React.FC = () => {
+  // ✅ All hooks first
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
   const [datasetStats, setDatasetStats] = useState<DatasetStats | null>(null);
-  const [originalDatasetStats, setOriginalDatasetStats] = useState<DatasetStats | null>(null);
+  const [originalDatasetStats, setOriginalDatasetStats] =
+    useState<DatasetStats | null>(null);
   const [retrainParams, setRetrainParams] = useState<RetrainParams>({
     n_estimators: 100,
     max_depth: 10,
@@ -57,74 +61,31 @@ const AdminPanel: React.FC = () => {
     basedScore: 20,
   });
   const [retraining, setRetraining] = useState(false);
-  const [message, setMessage] = useState<string>('');
-  const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
+  const [message, setMessage] = useState<string>("");
+  const [messageType, setMessageType] = useState<"success" | "error" | "">("");
 
-  const API_BASE = 'http://localhost:5000/api';
+  const { user, loading } = useUser(); // ✅ always runs
 
+  const API_BASE = "http://localhost:5000/api";
+
+  // fetch on mount
   useEffect(() => {
     fetchRetrainParams();
     fetchModelInfo();
     fetchDatasetStats();
   }, []);
 
-  // useEffect(() => {
-  //   if (retrainParams.difficulty !== undefined && datasetStats) {
-  //     let passRate: number;
 
-  //     if (retrainParams.difficulty <= 0.5) {
-  //       passRate = 100 - 30.8 * retrainParams.difficulty;
-  //     } else if (retrainParams.difficulty <= 0.9) {
-  //       passRate = 84.6 - 136.5 * (retrainParams.difficulty - 0.5);
-  //     } else {
-  //       passRate = 30.3;
-  //     }
-
-  //     const newRate = Math.round(passRate * 10) / 10;
-  //     if (datasetStats.target_stats.pass_rate !== newRate) {
-  //       setDatasetStats(prev =>
-  //         prev
-  //           ? {
-  //               ...prev,
-  //               target_stats: {
-  //                 ...prev.target_stats,
-  //                 pass_rate: newRate,
-  //               },
-  //             }
-  //           : prev
-  //       );
-  //     }
-  //   }
-  // }, [retrainParams.difficulty, datasetStats]);
-
-  // // recalculate 
-  // useEffect(() => {
-  //   if (retrainParams.basedScore !== undefined && originalDatasetStats) {
-  //     const scale = retrainParams.basedScore / 20;
-
-  //     setDatasetStats({
-  //       ...originalDatasetStats,
-  //       target_stats: {
-  //         ...originalDatasetStats.target_stats,
-  //         mean_grade: Math.round(originalDatasetStats.target_stats.mean_grade * scale * 100) / 100,
-  //         std_grade: Math.round(originalDatasetStats.target_stats.std_grade * scale * 100) / 100,
-  //         min_grade: Math.round(originalDatasetStats.target_stats.min_grade * scale * 100) / 100,
-  //         max_grade: Math.round(originalDatasetStats.target_stats.max_grade * scale * 100) / 100,
-  //       },
-  //     });
-  //   }
-  // }, [retrainParams.basedScore, originalDatasetStats]); 
 
   const fetchRetrainParams = async () => {
     try {
       const response = await getConfigs();
-      console.log(response);
-      if(response.config) {
+      if (response?.config) {
         setRetrainParams(response.config);
       }
     } catch (error) {
-      console.error('Error fetching retrain params:', error);
-      showMessage('Failed to load retrain parameters', 'error');
+      console.error("Error fetching retrain params:", error);
+      showMessage("Failed to load retrain parameters", "error");
     }
   };
 
@@ -132,10 +93,9 @@ const AdminPanel: React.FC = () => {
     try {
       const response = await axios.get(`${API_BASE}/model/info`);
       setModelInfo(response.data);
-      console.log(response.data);
     } catch (error) {
-      console.error('Error fetching model info:', error);
-      showMessage('Failed to load model information', 'error');
+      console.error("Error fetching model info:", error);
+      showMessage("Failed to load model information", "error");
     }
   };
 
@@ -145,55 +105,69 @@ const AdminPanel: React.FC = () => {
       setDatasetStats(response.data);
       setOriginalDatasetStats(response.data);
     } catch (error) {
-      console.error('Error fetching dataset stats:', error);
-      showMessage('Failed to load dataset statistics', 'error');
+      console.error("Error fetching dataset stats:", error);
+      showMessage("Failed to load dataset statistics", "error");
     }
   };
 
-  const showMessage = (msg: string, type: 'success' | 'error') => {
+  const showMessage = (msg: string, type: "success" | "error") => {
     setMessage(msg);
     setMessageType(type);
     setTimeout(() => {
-      setMessage('');
-      setMessageType('');
+      setMessage("");
+      setMessageType("");
     }, 5000);
   };
 
   const handleRetrainModels = async () => {
     setRetraining(true);
+    const id = toast.loading('Retarining...')
     try {
-      const response = await axios.post(`${API_BASE}/admin/retrain`, retrainParams);
-      showMessage(
-        `Models retrained successfully! Regression R²: ${response.data.performance.regression_r2}, Classification Accuracy: ${response.data.performance.classification_accuracy}`,
-        'success'
+      const response = await axios.post(
+        `${API_BASE}/admin/retrain`,
+        retrainParams
       );
-      // Refresh retrain parameters after retraining
+
+      showMessage(
+        `Models retrained successfully! Regression R²: ${response.data?.performance?.regression_r2}, Classification Accuracy: ${response.data?.performance?.classification_accuracy}`,
+        "success"
+      );
+      toast.update(id, { render:  `Models retrained successfully! Regression R²: ${response.data?.performance?.regression_r2}, Classification Accuracy: ${response.data?.performance?.classification_accuracy}`,
+         type: "success", isLoading: false,  autoClose: 5000, });
       await createConfig(retrainParams);
-      // Refresh model info after retraining
       await fetchModelInfo();
     } catch (error: any) {
-      showMessage(error.response?.data?.error || 'Failed to retrain models', 'error');
+      showMessage(
+        error.response?.data?.error || "Failed to retrain models",
+        "error"
+      );
+      toast.update(id, { render: "failed to retrain", type: "error", isLoading: false,  autoClose: 3000, });
     } finally {
       setRetraining(false);
     }
   };
 
   const handleParamChange = (param: keyof RetrainParams, value: number) => {
-    setRetrainParams(prev => ({
+    setRetrainParams((prev) => ({
       ...prev,
-      [param]: value
+      [param]: value,
     }));
   };
+
+    // ✅ Safe to return conditionally here
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (user && user?.role !== "admin") {
+    return window.location.href = '/'
+  }
 
   return (
     <div className="admin-panel">
       <h1>Admin Panel</h1>
-      
-      {message && (
-        <div className={`message ${messageType}`}>
-          {message}
-        </div>
-      )}
+
+      {message && <div className={`message ${messageType}`}>{message}</div>}
 
       <div className="admin-sections">
         {/* Dataset Statistics */}
@@ -211,11 +185,15 @@ const AdminPanel: React.FC = () => {
               </div>
               <div className="stat-card">
                 <h3>Mean Grade</h3>
-                <div className="stat-value">{datasetStats.target_stats.mean_grade}</div>
+                <div className="stat-value">
+                  {datasetStats.target_stats.mean_grade}
+                </div>
               </div>
               <div className="stat-card">
                 <h3>Pass Rate</h3>
-                <div className="stat-value">{datasetStats.target_stats.pass_rate}%</div>
+                <div className="stat-value">
+                  {datasetStats.target_stats.pass_rate}%
+                </div>
               </div>
             </div>
           ) : (
@@ -236,10 +214,13 @@ const AdminPanel: React.FC = () => {
                   max="500"
                   step="10"
                   value={retrainParams.n_estimators}
-                  onChange={(e) => handleParamChange('n_estimators', Number(e.target.value))}
+                  onChange={(e) =>
+                    handleParamChange("n_estimators", Number(e.target.value))
+                  }
                 />
-                <span className="param-value">{retrainParams.n_estimators}</span>
-                <small>Higher values = more complex model, better accuracy but slower training</small>
+                <span className="param-value">
+                  {retrainParams.n_estimators}
+                </span>
               </div>
 
               <div className="param-group">
@@ -250,41 +231,47 @@ const AdminPanel: React.FC = () => {
                   max="50"
                   step="1"
                   value={retrainParams.max_depth}
-                  onChange={(e) => handleParamChange('max_depth', Number(e.target.value))}
+                  onChange={(e) =>
+                    handleParamChange("max_depth", Number(e.target.value))
+                  }
                 />
                 <span className="param-value">{retrainParams.max_depth}</span>
-                <small>Controls how deep each tree can grow (overfitting prevention)</small>
               </div>
 
               <div className="param-group">
-                <label>Min Samples Split (min_samples_split)</label>
+                <label>Min Samples Split</label>
                 <input
                   type="range"
                   min="2"
                   max="20"
                   step="1"
                   value={retrainParams.min_samples_split}
-                  onChange={(e) => handleParamChange('min_samples_split', Number(e.target.value))}
+                  onChange={(e) =>
+                    handleParamChange("min_samples_split", Number(e.target.value))
+                  }
                 />
-                <span className="param-value">{retrainParams.min_samples_split}</span>
-                <small>Minimum samples required to split a node</small>
+                <span className="param-value">
+                  {retrainParams.min_samples_split}
+                </span>
               </div>
 
               <div className="param-group">
-                <label>Min Samples Leaf (min_samples_leaf)</label>
+                <label>Min Samples Leaf</label>
                 <input
                   type="range"
                   min="1"
                   max="10"
                   step="1"
                   value={retrainParams.min_samples_leaf}
-                  onChange={(e) => handleParamChange('min_samples_leaf', Number(e.target.value))}
+                  onChange={(e) =>
+                    handleParamChange("min_samples_leaf", Number(e.target.value))
+                  }
                 />
-                <span className="param-value">{retrainParams.min_samples_leaf}</span>
-                <small>Minimum samples required at each leaf node</small>
+                <span className="param-value">
+                  {retrainParams.min_samples_leaf}
+                </span>
               </div>
 
-              {/* difficulty 0.1 to 0.9 default 0.5 */}
               <div className="param-group">
                 <label>Difficulty</label>
                 <input
@@ -293,13 +280,13 @@ const AdminPanel: React.FC = () => {
                   max="0.9"
                   step="0.1"
                   value={retrainParams.difficulty}
-                  onChange={(e) => handleParamChange('difficulty', Number(e.target.value))}
+                  onChange={(e) =>
+                    handleParamChange("difficulty", Number(e.target.value))
+                  }
                 />
                 <span className="param-value">{retrainParams.difficulty}</span>
-                <small>Controls the difficulty of the training data</small>
               </div>
 
-              {/* basedScore 1 to 100, default 20 */}
               <div className="param-group">
                 <label>Based Score</label>
                 <input
@@ -308,12 +295,12 @@ const AdminPanel: React.FC = () => {
                   max="100"
                   step="1"
                   value={retrainParams.basedScore}
-                  onChange={(e) => handleParamChange('basedScore', Number(e.target.value))}
+                  onChange={(e) =>
+                    handleParamChange("basedScore", Number(e.target.value))
+                  }
                 />
                 <span className="param-value">{retrainParams.basedScore}</span>
-                <small>Controls the based score of the training data</small>
               </div>
-
             </div>
 
             <button
@@ -321,7 +308,7 @@ const AdminPanel: React.FC = () => {
               onClick={handleRetrainModels}
               disabled={retraining}
             >
-              {retraining ? 'Retraining Models...' : 'Retrain Models'}
+              {retraining ? "Retraining Models..." : "Retrain Models"}
             </button>
           </div>
         </div>
@@ -333,48 +320,70 @@ const AdminPanel: React.FC = () => {
             <div className="model-info">
               <div className="model-details">
                 <h3>Regression Model</h3>
-                <p><strong>Type:</strong> {modelInfo.regression_model.type}</p>
-                <p><strong>Trees:</strong> {modelInfo.regression_model.n_estimators}</p>
-                <p><strong>Max Depth:</strong> {modelInfo.regression_model.max_depth}</p>
+                <p>
+                  <strong>Type:</strong> {modelInfo.regression_model.type}
+                </p>
+                <p>
+                  <strong>Trees:</strong> {modelInfo.regression_model.n_estimators}
+                </p>
+                <p>
+                  <strong>Max Depth:</strong> {modelInfo.regression_model.max_depth}
+                </p>
                 <div className="feature-importance">
                   <h4>Top Features (Regression)</h4>
                   <div className="importance-list">
-                    {modelInfo.regression_model.feature_importance.map(([feature, importance]) => (
-                      <div key={feature} className="importance-item">
-                        <span className="feature-name">{feature}</span>
-                        <div className="importance-bar">
-                          <div 
-                            className="importance-fill"
-                            style={{ width: `${importance * 100}%` }}
-                          />
+                    {modelInfo.regression_model.feature_importance.map(
+                      ([feature, importance]) => (
+                        <div key={feature} className="importance-item">
+                          <span className="feature-name">{feature}</span>
+                          <div className="importance-bar">
+                            <div
+                              className="importance-fill"
+                              style={{ width: `${importance * 100}%` }}
+                            />
+                          </div>
+                          <span className="importance-value">
+                            {(importance * 100).toFixed(1)}%
+                          </span>
                         </div>
-                        <span className="importance-value">{(importance * 100).toFixed(1)}%</span>
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="model-details">
                 <h3>Classification Model</h3>
-                <p><strong>Type:</strong> {modelInfo.classification_model.type}</p>
-                <p><strong>Trees:</strong> {modelInfo.classification_model.n_estimators}</p>
-                <p><strong>Max Depth:</strong> {modelInfo.classification_model.max_depth}</p>
+                <p>
+                  <strong>Type:</strong> {modelInfo.classification_model.type}
+                </p>
+                <p>
+                  <strong>Trees:</strong>{" "}
+                  {modelInfo.classification_model.n_estimators}
+                </p>
+                <p>
+                  <strong>Max Depth:</strong>{" "}
+                  {modelInfo.classification_model.max_depth}
+                </p>
                 <div className="feature-importance">
                   <h4>Top Features (Classification)</h4>
                   <div className="importance-list">
-                    {modelInfo.classification_model.feature_importance.map(([feature, importance]) => (
-                      <div key={feature} className="importance-item">
-                        <span className="feature-name">{feature}</span>
-                        <div className="importance-bar">
-                          <div 
-                            className="importance-fill"
-                            style={{ width: `${importance * 100}%` }}
-                          />
+                    {modelInfo.classification_model.feature_importance.map(
+                      ([feature, importance]) => (
+                        <div key={feature} className="importance-item">
+                          <span className="feature-name">{feature}</span>
+                          <div className="importance-bar">
+                            <div
+                              className="importance-fill"
+                              style={{ width: `${importance * 100}%` }}
+                            />
+                          </div>
+                          <span className="importance-value">
+                            {(importance * 100).toFixed(1)}%
+                          </span>
                         </div>
-                        <span className="importance-value">{(importance * 100).toFixed(1)}%</span>
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
                 </div>
               </div>

@@ -78,6 +78,7 @@ const Register: React.FC = () => {
       const response = await register({ username, email, password });
       console.log(response);
       setMessage("✅ Registration successful!");
+      window.location.href = '/';
     } catch (error) {
       setMessage("❌ An error occurred.");
     }

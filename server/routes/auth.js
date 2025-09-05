@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { login, register, getProfile, getAllUsers, createUser, updateUser, deleteUser } from '../controllers/user.js';
+import { login, register, getProfile, getAllUsers, createUser, updateUser, deleteUser, logout } from '../controllers/user.js';
 import { verifyJWT } from '../middlewares/verifyJWT.js';
 
 
@@ -19,5 +19,8 @@ router.put('/users/:id', verifyJWT, updateUser);
 
 // DELETE a user by ID (admin only)
 router.delete('/users/:id', verifyJWT, deleteUser);
+
+// logout
+router.post('/logout',verifyJWT, logout);
 
 export default router;

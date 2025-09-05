@@ -70,6 +70,7 @@ const Login: React.FC = () => {
       const response = await login({ email, password });
       console.log(response);
       setMessage("✅ Login successful!");
+      window.location.href = '/'; // Redirect to home page after successful login
     } catch (error) {
       setMessage("❌ Invalid email or password.");
     }

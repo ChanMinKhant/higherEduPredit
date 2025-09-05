@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './PredictionForm.css';
 import PredictionResult from '../../components/PredictionResult';
 import { getFormStructure, predict } from '../../services/predict';
+import { toast  } from 'react-toastify';
 
 interface FormField {
   name: string;
@@ -56,6 +57,7 @@ const PredictionForm: React.FC = () => {
       });
       setFormData(initialData);
     } catch (err) {
+      toast.error("failed to get form structure");
       setError('Failed to load form structure');
       console.error('Error fetching form structure:', err);
     }
@@ -109,13 +111,15 @@ const PredictionForm: React.FC = () => {
     setError('');
     setPrediction(null);
 
+    const id = toast.loading('Predicting...')
     try {
       const apiData = convertFormDataForAPI(formData);
       const response = await predict(apiData);
       setPrediction(response);
+      toast.update(id, { render: "Predicted", type: "success", isLoading: false,  autoClose: 3000, });
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to get prediction');
-      console.error('Prediction error:', err);
+      toast.update(id, { render: "failed to predict", type: "error", isLoading: false,  autoClose: 3000, });
     } finally {
       setLoading(false);
     }
@@ -177,7 +181,7 @@ const PredictionForm: React.FC = () => {
 
   return (
     <div className="prediction-container">
-      <div className="form-section">
+      <div className= "form-section">
         <h2>Student Information Form</h2>
         
         {error && <div className="error-message">{error}</div>}

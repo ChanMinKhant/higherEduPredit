@@ -1,15 +1,16 @@
 import React from 'react'
 import { getRecentPredictions } from '../../services/predict';
 import { useUser } from '../../hooks/useUser';
+import { Link } from 'react-router-dom';
 
 export default function RecentPrediction() {
   const [predictions, setPredictions] = React.useState<any[]>([]);
   const { user, loading } = useUser();
-
+  
   React.useEffect(() => {
     const fetchRecentPredictions = async () => {
       if (!user) return; // ✅ wait until user is available
-
+      
       try {
         const data = await getRecentPredictions(user._id);
         console.log('recent preditions:',data);
@@ -18,18 +19,25 @@ export default function RecentPrediction() {
         console.error("Error fetching recent predictions:", error);
       }
     };
-
+    
     fetchRecentPredictions();
   }, [user]);
-
+  
+  
+      if (loading) {
+      return <div>Loading...</div>;
+      }
+      if (!user) {
+        return window.location.href = '/'
+      }
   return (
     <div className="w-full flex flex-col items-center mt-10">
       <div className='w-full flex justify-center mb-6'>
         <div className='w-[90%] m-auto flex justify-between items-center mb-6'>
         <h2 className="text-2xl font-bold mb-6">Recent Predictions</h2>
-        <button className="text-blue-500 hover:underline" onClick={() => console.log('More predictions clicked')}>
+        <Link to="/predict" className="text-blue-500 hover:underline">
           More predictions
-        </button>
+        </Link>
         </div>
       </div>
 
