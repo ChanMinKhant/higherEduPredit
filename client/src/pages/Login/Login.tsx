@@ -1,54 +1,146 @@
 
-import React, { useState } from 'react';
-import { login } from '../../services/auth';
+// import React, { useState } from 'react';
+// import { login } from '../../services/auth';
+
+// const Login: React.FC = () => {
+// 	const [email, setEmail] = useState('');
+// 	const [password, setPassword] = useState('');
+// 	const [message, setMessage] = useState('');
+
+// 	const handleLogin = async (e: React.FormEvent) => {
+// 		e.preventDefault();
+// 		setMessage('');
+// 		try {
+// 			const response = await login({ email, password });
+// 			console.log(response);
+// 			setMessage('Login successful!');
+// 		} catch (error) {
+// 			setMessage('Invalid email or password.');
+// 		}
+// 	};
+
+// 	return (
+// 		<div className=''>
+// 			<h2 className="text-2xl font-bold text-center text-[#9c23d9] mt-8 mb-6">Login</h2>
+// 			<div className="w-[150px] h-1 m-auto bg-[#9c23d9] mt-[-20px] rounded text-center"></div>
+// 			<form onSubmit={handleLogin}>
+// 				<div>
+// 					<label className="block text-gray-600 font-medium mb-1">Email:</label>
+// 					<input
+// 						type="email"
+// 						value={email}
+// 						onChange={e => setEmail(e.target.value)}
+// 						required
+// 						className="w-full px-4 py-8 h-[40px] rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+// 					/>
+// 				</div>
+// 				<div>
+// 					<label className="block text-gray-600 font-medium mb-1">Password:</label>
+// 					<input
+// 						type="password"
+// 						value={password}
+// 						onChange={e => setPassword(e.target.value)}
+// 						required
+// 						className="w-full px-4 py-8 h-[40px] rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+// 					/>
+// 				</div>
+// 				<div>
+// 					Don't have an account? <a href="/register">Register</a>	
+// 				</div>
+// 				<button type="submit">Login</button>
+// 			</form>
+// 			{message && <p>{message}</p>}
+// 		</div>
+// 	);
+// };
+
+// export default Login;
+import React, { useState } from "react";
+import { login } from "../../services/auth";
 
 const Login: React.FC = () => {
-	const [email, setEmail] = useState('');
-	const [password, setPassword] = useState('');
-	const [message, setMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
 
-	const handleLogin = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setMessage('');
-		try {
-			const response = await login({ email, password });
-			console.log(response);
-			setMessage('Login successful!');
-		} catch (error) {
-			setMessage('Invalid email or password.');
-		}
-	};
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage("");
+    try {
+      const response = await login({ email, password });
+      console.log(response);
+      setMessage("✅ Login successful!");
+    } catch (error) {
+      setMessage("❌ Invalid email or password.");
+    }
+  };
 
-	return (
-		<div>
-			<h2>Login</h2>
-			<form onSubmit={handleLogin}>
-				<div>
-					<label>Email:</label>
-					<input
-						type="email"
-						value={email}
-						onChange={e => setEmail(e.target.value)}
-						required
-					/>
-				</div>
-				<div>
-					<label>Password:</label>
-					<input
-						type="password"
-						value={password}
-						onChange={e => setPassword(e.target.value)}
-						required
-					/>
-				</div>
-				<div>
-					Don't have an account? <a href="/register">Register</a>	
-				</div>
-				<button type="submit">Login</button>
-			</form>
-			{message && <p>{message}</p>}
-		</div>
-	);
+  return (
+    <div className="flex min-h-screen items-top justify-center bg-gray-100 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md rounded-2xl bg-white shadow-lg h-[350px] pb-6">
+        <form
+          onSubmit={handleLogin}
+          className="flex flex-col items-center w-full p-4 justify-evenly h-full"
+        >
+          <h2 className="text-2xl font-bold text-center text-[#9c23d9] mt-8 mb-6">
+            Login
+          </h2>
+          <div className="w-[150px] h-1 m-auto bg-[#9c23d9] mt-[-20px] rounded"></div>
+
+          <div className="mb-4 w-[90%]">
+            <label className="block text-gray-600 font-medium mb-1">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-2 h-[40px] rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div className="mb-6 w-[90%]">
+            <label className="block text-gray-600 font-medium mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-2 h-[40px] rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-[120px] py-[10px] h-[40px] bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+          >
+            Login
+          </button>
+        </form>
+
+        {message && (
+          <p
+            className={`mt-4 text-center font-medium ${
+              message.includes("successful") ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {message}
+          </p>
+        )}
+
+        <p className="mt-6 text-center text-gray-600 text-sm">
+          Don&apos;t have an account?{" "}
+          <a
+            href="/register"
+            className="text-blue-600 font-medium hover:underline"
+          >
+            Register
+          </a>
+        </p>
+      </div>
+    </div>
+  );
 };
 
 export default Login;

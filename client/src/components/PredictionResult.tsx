@@ -1,5 +1,6 @@
 import React from 'react';
 import './PredictionResult.css';
+import { getConfigs } from '../services/modalConfig';
 
 interface PredictionResultProps {
   prediction: {
@@ -15,12 +16,37 @@ interface PredictionResultProps {
 }
 
 const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
+  const [basedScore, setBasedScore] = React.useState(20);
+  const [config, setConfig] = React.useState<any>({
+    difficulty: 0.7,
+    max_depth: 50,
+    min_samples_leaf: 10,
+    min_samples_split: 20,
+    n_estimators: 500
+  });
+
+  React.useEffect(() => {
+    const fetchBasedScore = async () => {
+      try {
+        const response = await getConfigs();
+        const score = response.config.basedScore || 20;
+        console.log("Fetched basedScore:", score);
+        setBasedScore(score);
+        setConfig(response.config);
+        console.log(response.config);
+      } catch (error) {
+        console.error("Error fetching basedScore:", error);
+        setBasedScore(20);
+      }
+    };
+    fetchBasedScore();
+  }, []);
   const getGradeColor = (grade: number) => {
     if (grade >= 15) return '#27ae60';
     if (grade >= 10) return '#f39c12';
     return '#e74c3c';
   };
-  console.log(prediction);
+  
   const getConfidenceColor = (confidence: string) => {
     switch (confidence) {
       case 'high': return '#27ae60';
@@ -47,13 +73,13 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
             className="grade-value"
             style={{ color: getGradeColor(prediction.predicted_grade) }}
           >
-            {prediction.predicted_grade}/20
+            {prediction.predicted_grade}/{basedScore}
           </div>
           <div className="grade-bar">
             <div 
               className="grade-fill"
               style={{ 
-                width: `${(prediction.predicted_grade / 20) * 100}%`,
+                width: `${(prediction.predicted_grade / basedScore) * 100}%`,
                 backgroundColor: getGradeColor(prediction.predicted_grade)
               }}
             />
@@ -126,10 +152,10 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
       <div className="interpretation">
         <h3>Interpretation</h3>
         <div className="interpretation-text">
-          {prediction.predicted_grade >= 10 ? (
+          {prediction.predicted_grade >= basedScore / 50 ? (
             <p>
               ✅ The student is predicted to <strong>pass</strong> with a grade of{' '}
-              <strong>{prediction.predicted_grade.toFixed(1)}/20</strong>.
+              <strong>{prediction.predicted_grade.toFixed(1)}/{basedScore}</strong>.
             </p>
           ) : (
             <p>

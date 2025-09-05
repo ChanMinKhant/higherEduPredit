@@ -16,6 +16,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, r2_score
 import warnings 
 import json
+import requests
 warnings.filterwarnings('ignore')
 
 app = Flask(__name__)
@@ -91,7 +92,7 @@ def health_check():
 @app.route('/api/predict', methods=['POST'])
 def predict():
     """Make predictions for a student"""
-    print(json.dumps(request.get_json(), indent=2, ensure_ascii=False))
+    # print(json.dumps(request.get_json(), indent=2, ensure_ascii=False))
     try:
         data = request.get_json()
         if not data:
@@ -100,12 +101,12 @@ def predict():
         # Validate required fields
         required_fields = feature_columns
         missing_fields = [field for field in required_fields if field not in data]
-        
+        print(missing_fields)
         if missing_fields:
             return jsonify({
                 'error': f'Missing required fields: {missing_fields}'
             }), 400
-        
+        print('abc')
         # Prepare data for prediction
         X_scaled = prepare_input_for_prediction(data)
         
@@ -195,6 +196,8 @@ def retrain_models():
         max_depth = data.get('max_depth', 10)
         min_samples_split = data.get('min_samples_split', 5)
         min_samples_leaf = data.get('min_samples_leaf', 2)
+        difficulty = data.get('difficulty', 0.5)  # Not used in current logic
+        basedScore = data.get('basedScore', 20)  # Not used in current logic
         
         # Validate parameters
         if not (10 <= n_estimators <= 500):
@@ -202,12 +205,19 @@ def retrain_models():
         
         if not (3 <= max_depth <= 50):
             return jsonify({'error': 'max_depth must be between 3 and 50'}), 400
-        
+        # if difficulty is 0.5 passScored would be 10
+        passScored = basedScore * difficulty
+
+        print("passScored:", passScored, "difficulty:", difficulty, "basedScore:", basedScore)
         # Prepare training data
         X = training_data[feature_columns]
-        y_regression = training_data['G3']
-        y_classification = (training_data['G3'] >= 10).astype(int)
-        
+        X['G1'] = training_data['G1'] * (basedScore / 20)
+        X['G2'] = training_data['G2'] * (basedScore / 20)
+        print(X[['G1', 'G2']].head(5))
+        Y = training_data['G3'] * (basedScore / 20)
+        y_regression = Y * (1 - (difficulty - 0.5))
+        y_classification = (Y >= passScored).astype(int)
+        print(y_regression.head(5))
         # Scale features
         X_scaled = scaler.fit_transform(X)
         X_scaled = pd.DataFrame(X_scaled, columns=feature_columns)
@@ -278,16 +288,30 @@ def dataset_stats():
         if training_data is None:
             return jsonify({'error': 'Training data not loaded'}), 500
         
+        try:
+            response = requests.get('http://localhost:3000/api/config/model-config')
+            if response.status_code == 200:
+                config_data = response.json()
+                print("Config Data:", json.dumps(config_data, indent=2, ensure_ascii=False))
+            else:
+                print(f"Failed to fetch model config: {response.status_code}")
+                return jsonify({'error': 'Failed to fetch model config'}), 500
+        except Exception as e:
+            print(f"Error fetching model config: {str(e)}")
+            return jsonify({'error': 'Error fetching model config'}), 500
+        basedScore = config_data["config"].get('basedScore', 20)
+        difficulty = config_data["config"].get('difficulty', 0.5)
+
         stats = {
             'total_samples': len(training_data),
             'total_features': len(feature_columns),
             'target_stats': {
-                'mean_grade': round(training_data['G3'].mean(), 2),
-                'std_grade': round(training_data['G3'].std(), 2),
-                'min_grade': int(training_data['G3'].min()),
-                'max_grade': int(training_data['G3'].max()),
-                'pass_rate': round((training_data['G3'] >= 10).sum() / len(training_data) * 100, 1)
-            },
+                'mean_grade': round(training_data['G3'].mean(), 2) * (basedScore / 20),
+                'std_grade': round(training_data['G3'].std(), 2) * (basedScore / 20),
+                'min_grade': int(training_data['G3'].min()) * (basedScore / 20),
+                'max_grade': int(training_data['G3'].max()) * (basedScore / 20),
+                'pass_rate': round((( (training_data['G3'] * (basedScore / 20)) >= (basedScore * difficulty) ).sum() / len(training_data)) * 100, 1)
+                },
             'feature_stats': {
                 'numerical_features': len(training_data.select_dtypes(include=[np.number]).columns) - 1,
                 'categorical_features': len(training_data.select_dtypes(exclude=[np.number]).columns)
@@ -297,11 +321,24 @@ def dataset_stats():
         return jsonify(stats)
         
     except Exception as e:
+        print(f"Error fetching dataset stats: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/form/structure', methods=['GET'])
 def form_structure():
     """Get form structure for frontend"""
+    # fetch data from localhost:3000/api/ml/model-config
+    try:
+        response = requests.get('http://localhost:3000/api/config/model-config')
+        if response.status_code == 200:
+            config_data = response.json()
+            print("Config Data:", json.dumps(config_data, indent=2, ensure_ascii=False))
+        else:
+            print(f"Failed to fetch model config: {response.status_code}")
+            return jsonify({'error': 'Failed to fetch model config'}), 500
+    except Exception as e:
+        print(f"Error fetching model config: {str(e)}")
+        return jsonify({'error': 'Error fetching model config'}), 500
     form_fields = [
         {'name': 'sex', 'type': 'select', 'label': 'Gender', 'options': [
             {'value': 0, 'label': 'Female'}, {'value': 1, 'label': 'Male'}
@@ -398,8 +435,8 @@ def form_structure():
     if(True):
         # For testing, add G1 and G2 fields
         form_fields.extend([
-            {'name': 'G1', 'type': 'number', 'label': 'First Period Grade(0-20)', 'min': 0, 'max': 20},
-            {'name': 'G2', 'type': 'number', 'label': 'Second Period Grade(0-20)', 'min': 0, 'max': 20}
+            {'name': 'G1', 'type': 'number', 'label': f'First Period Grade(0-{config_data["config"].get("basedScore", 20)})', 'min': 0, 'max': config_data["config"].get('basedScore', 20)},
+            {'name': 'G2', 'type': 'number', 'label': f'Second Period Grade(0-{config_data["config"].get("basedScore", 20)})', 'min': 0, 'max': config_data["config"].get('basedScore', 20)}
         ])
 
     return jsonify({'fields': form_fields})

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import axios from 'axios';
 import './AdminPanel.css';
+import { createConfig, getConfigs } from '../../services/modalConfig';
 
 interface ModelInfo {
   regression_model: {
@@ -46,6 +47,7 @@ interface RetrainParams {
 const AdminPanel: React.FC = () => {
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
   const [datasetStats, setDatasetStats] = useState<DatasetStats | null>(null);
+  const [originalDatasetStats, setOriginalDatasetStats] = useState<DatasetStats | null>(null);
   const [retrainParams, setRetrainParams] = useState<RetrainParams>({
     n_estimators: 100,
     max_depth: 10,
@@ -61,14 +63,76 @@ const AdminPanel: React.FC = () => {
   const API_BASE = 'http://localhost:5000/api';
 
   useEffect(() => {
+    fetchRetrainParams();
     fetchModelInfo();
     fetchDatasetStats();
   }, []);
+
+  // useEffect(() => {
+  //   if (retrainParams.difficulty !== undefined && datasetStats) {
+  //     let passRate: number;
+
+  //     if (retrainParams.difficulty <= 0.5) {
+  //       passRate = 100 - 30.8 * retrainParams.difficulty;
+  //     } else if (retrainParams.difficulty <= 0.9) {
+  //       passRate = 84.6 - 136.5 * (retrainParams.difficulty - 0.5);
+  //     } else {
+  //       passRate = 30.3;
+  //     }
+
+  //     const newRate = Math.round(passRate * 10) / 10;
+  //     if (datasetStats.target_stats.pass_rate !== newRate) {
+  //       setDatasetStats(prev =>
+  //         prev
+  //           ? {
+  //               ...prev,
+  //               target_stats: {
+  //                 ...prev.target_stats,
+  //                 pass_rate: newRate,
+  //               },
+  //             }
+  //           : prev
+  //       );
+  //     }
+  //   }
+  // }, [retrainParams.difficulty, datasetStats]);
+
+  // // recalculate 
+  // useEffect(() => {
+  //   if (retrainParams.basedScore !== undefined && originalDatasetStats) {
+  //     const scale = retrainParams.basedScore / 20;
+
+  //     setDatasetStats({
+  //       ...originalDatasetStats,
+  //       target_stats: {
+  //         ...originalDatasetStats.target_stats,
+  //         mean_grade: Math.round(originalDatasetStats.target_stats.mean_grade * scale * 100) / 100,
+  //         std_grade: Math.round(originalDatasetStats.target_stats.std_grade * scale * 100) / 100,
+  //         min_grade: Math.round(originalDatasetStats.target_stats.min_grade * scale * 100) / 100,
+  //         max_grade: Math.round(originalDatasetStats.target_stats.max_grade * scale * 100) / 100,
+  //       },
+  //     });
+  //   }
+  // }, [retrainParams.basedScore, originalDatasetStats]); 
+
+  const fetchRetrainParams = async () => {
+    try {
+      const response = await getConfigs();
+      console.log(response);
+      if(response.config) {
+        setRetrainParams(response.config);
+      }
+    } catch (error) {
+      console.error('Error fetching retrain params:', error);
+      showMessage('Failed to load retrain parameters', 'error');
+    }
+  };
 
   const fetchModelInfo = async () => {
     try {
       const response = await axios.get(`${API_BASE}/model/info`);
       setModelInfo(response.data);
+      console.log(response.data);
     } catch (error) {
       console.error('Error fetching model info:', error);
       showMessage('Failed to load model information', 'error');
@@ -79,6 +143,7 @@ const AdminPanel: React.FC = () => {
     try {
       const response = await axios.get(`${API_BASE}/admin/dataset/stats`);
       setDatasetStats(response.data);
+      setOriginalDatasetStats(response.data);
     } catch (error) {
       console.error('Error fetching dataset stats:', error);
       showMessage('Failed to load dataset statistics', 'error');
@@ -102,6 +167,8 @@ const AdminPanel: React.FC = () => {
         `Models retrained successfully! Regression R²: ${response.data.performance.regression_r2}, Classification Accuracy: ${response.data.performance.classification_accuracy}`,
         'success'
       );
+      // Refresh retrain parameters after retraining
+      await createConfig(retrainParams);
       // Refresh model info after retraining
       await fetchModelInfo();
     } catch (error: any) {
@@ -296,7 +363,7 @@ const AdminPanel: React.FC = () => {
                 <div className="feature-importance">
                   <h4>Top Features (Classification)</h4>
                   <div className="importance-list">
-                    {modelInfo.classification_model.feature_importance.slice(0, 5).map(([feature, importance]) => (
+                    {modelInfo.classification_model.feature_importance.map(([feature, importance]) => (
                       <div key={feature} className="importance-item">
                         <span className="feature-name">{feature}</span>
                         <div className="importance-bar">

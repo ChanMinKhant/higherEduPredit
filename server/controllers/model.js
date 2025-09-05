@@ -8,11 +8,11 @@ import ModelConfig from "../modals/modelConfig.js";
  * @access  Admin
  */
 export const getModelConfigs = asyncHandler(async (req, res) => {
-  const configs = await ModelConfig.find();
+  // find latest config
+  const config = await ModelConfig.findOne().sort({ createdAt: -1 });
   res.status(200).json({
     success: true,
-    count: configs.length,
-    configs,
+    config,
   });
 });
 

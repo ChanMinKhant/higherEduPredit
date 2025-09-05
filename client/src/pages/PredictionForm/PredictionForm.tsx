@@ -165,10 +165,10 @@ const PredictionForm: React.FC = () => {
     const groups = {
       basic: fields.slice(0, 4),
       education: fields.slice(4, 9),
-      support: fields.slice(9, 15),
-      personal: fields.slice(15, 20),
-      family: fields.slice(20,23),
-      academic: fields.slice(23, 25)
+      support: fields.slice(9, 13),
+      personal: fields.slice(13, 19),
+      family: fields.slice(19, 22),
+      academic: fields.slice(22, 24)
     };
     return groups;
   };

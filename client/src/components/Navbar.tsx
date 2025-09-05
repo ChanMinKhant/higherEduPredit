@@ -10,7 +10,7 @@ const Navbar: React.FC = () => {
   return (
     <nav className="navbar">
       <div className="nav-container">
-        <h1 className="nav-title">Student Performance Predictor</h1>
+        <h1 className="nav-title">Higher Education Access Prediction System</h1>
         <div className="nav-links">
           <Link 
             to="/" 

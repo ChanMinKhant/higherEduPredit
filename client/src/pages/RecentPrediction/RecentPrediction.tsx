@@ -12,6 +12,7 @@ export default function RecentPrediction() {
 
       try {
         const data = await getRecentPredictions(user._id);
+        console.log('recent preditions:',data);
         setPredictions(data);
       } catch (error) {
         console.error("Error fetching recent predictions:", error);
@@ -22,19 +23,25 @@ export default function RecentPrediction() {
   }, [user]);
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Recent Predictions</h2>
+    <div className="w-full flex flex-col items-center mt-10">
+      <div className='w-full flex justify-center mb-6'>
+        <div className='w-[90%] m-auto flex justify-between items-center mb-6'>
+        <h2 className="text-2xl font-bold mb-6">Recent Predictions</h2>
+        <button className="text-blue-500 hover:underline" onClick={() => console.log('More predictions clicked')}>
+          More predictions
+        </button>
+        </div>
+      </div>
 
       {loading ? (
         <p className="text-gray-500">Loading...</p>
       ) : predictions.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="flex flex-wrap gap-6 justify-start w-[90%] m-auto">
+          {/* grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 */}
           {predictions.map((p: any) => (
-            <div 
-              key={p._id} 
-              className="bg-white shadow-md rounded-2xl p-5 hover:shadow-lg transition"
-            >
-              <h3 className="text-lg font-semibold mb-2">
+            <div key={p._id} className="flex justify-center rounded-2xl shadow-sm hover:shadow-md transition h-[200px] w-[400px] border border-gray-200 bg-white shadow-md rounded-2xl hover:shadow-lg transition">
+              <div className=" flex flex-col justify-evenly items-stretched  w-[90%] m-auto p-4  h-full">
+                <h3 className="text-lg font-semibold mb-2">
                 {p.result.pass_fail === "pass" ? (
                   <span className="text-green-600">✅ PASS</span>
                 ) : (
@@ -43,7 +50,7 @@ export default function RecentPrediction() {
               </h3>
 
               <p className="text-gray-700">
-                <span className="font-medium">Predicted Grade:</span> {p.result.predicted_grade}
+                <span className="font-medium">Success Chance:</span> {(p.result.probability_pass * 100).toFixed(2)}%
               </p>
               <p className="text-gray-700">
                 <span className="font-medium">Confidence:</span> {p.result.confidence}
@@ -55,6 +62,7 @@ export default function RecentPrediction() {
                 <span className="font-medium">Predicted date:</span>{" "}
                 {new Date(p.createdAt).toLocaleString()}
               </p>
+            </div>
             </div>
           ))}
         </div>
