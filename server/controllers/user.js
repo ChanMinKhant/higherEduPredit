@@ -5,9 +5,7 @@ import jwt from 'jsonwebtoken';
 import CustomError from '../middlewares/CustomError.js';  
 
 export const register = asyncHandler(async (req, res, next) => {
-    console.log(process.env.JWT_SECRET);
     const { username, email, password } = req.body;
-    console.log(req.body);
     // Simple validation
     if (!username || !email || !password) {
         res.status(400);
@@ -30,7 +28,6 @@ export const register = asyncHandler(async (req, res, next) => {
         email,
         password: hashedPassword,
     });
-    console.log(user)
     // Generate JWT
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || '12345', {
         expiresIn: '7d',
@@ -57,7 +54,6 @@ export const register = asyncHandler(async (req, res, next) => {
 
 export const login = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
-    console.log(email, password);
     // Simple validation
     if (!email || !password) {
         res.status(400);
@@ -148,7 +144,6 @@ export const createUser = asyncHandler(async (req, res, next) => {
     }
     // Check if user already exists (replace with your User model)
     const existingUser = await User.findOne({ email });
-    console.log(existingUser)
     if (existingUser) {
         res.status(400);
         throw new Error('User already exists');

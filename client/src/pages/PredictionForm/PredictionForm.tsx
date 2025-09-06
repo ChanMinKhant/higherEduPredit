@@ -3,6 +3,8 @@ import './PredictionForm.css';
 import PredictionResult from '../../components/PredictionResult';
 import { getFormStructure, predict } from '../../services/predict';
 import { toast  } from 'react-toastify';
+import { useUser } from '../../hooks/useUser';
+import { useNavigate } from 'react-router-dom';
 
 interface FormField {
   name: string;
@@ -29,9 +31,19 @@ const PredictionForm: React.FC = () => {
   const [formFields, setFormFields] = useState<FormField[]>([]);
   const [formData, setFormData] = useState<FormData>({});
   const [prediction, setPrediction] = useState<PredictionResponse | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading1, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const navigate = useNavigate();
 
+  // Assuming getUser is a hook or function that returns user and loading
+  const { user, loading } = useUser();
+  console.log(user)
+  useEffect(() => {
+    if (!loading && !user) {
+      // If user already logged in / exists → redirect
+      navigate("/");
+    }
+  }, [user, loading, navigate]);
   
 
   useEffect(() => {
@@ -262,9 +274,9 @@ const PredictionForm: React.FC = () => {
           <button 
             type="submit" 
             className="submit-button"
-            disabled={loading}
+            disabled={loading1}
           >
-            {loading ? 'Predicting...' : 'Get Prediction'}
+            {loading1 ? 'Predicting...' : 'Get Prediction'}
           </button>
         </form>
       </div>

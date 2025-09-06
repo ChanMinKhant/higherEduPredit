@@ -4,6 +4,7 @@ import "./AdminPanel.css";
 import { createConfig, getConfigs } from "../../services/modalConfig";
 import { useUser } from "../../hooks/useUser.js";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 interface ModelInfo {
   regression_model: {
@@ -63,8 +64,17 @@ const AdminPanel: React.FC = () => {
   const [retraining, setRetraining] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [messageType, setMessageType] = useState<"success" | "error" | "">("");
+  const navigate = useNavigate();
 
-  const { user, loading } = useUser(); // ✅ always runs
+  // Assuming getUser is a hook or function that returns user and loading
+  const { user, loading } = useUser();
+  console.log(user)
+  useEffect(() => {
+    if (!loading && user?.role !== 'admin') {
+      // If user already logged in / exists → redirect
+      navigate("/");
+    }
+  }, [user, loading, navigate]);
 
   const API_BASE = "http://localhost:5000/api";
 
@@ -160,10 +170,6 @@ const AdminPanel: React.FC = () => {
     return <div>Loading...</div>;
   }
 
-  if (user && user?.role !== "admin") {
-    return window.location.href = '/'
-  }
-
   return (
     <div className="admin-panel">
       <h1>Admin Panel</h1>
@@ -182,7 +188,7 @@ const AdminPanel: React.FC = () => {
               </div>
               <div className="stat-card">
                 <h3>Features</h3>
-                <div className="stat-value">{datasetStats.total_features}</div>
+                <div className="stat-value">{datasetStats.total_features - 10}</div>
               </div>
               <div className="stat-card">
                 <h3>Mean Grade</h3>
