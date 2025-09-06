@@ -55,22 +55,34 @@
 // };
 
 // export default Login;
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { login } from "../../services/auth";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../../hooks/useUser";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+
+  // Assuming getUser is a hook or function that returns user and loading
+  const { user, loading } = useUser();
+
+  useEffect(() => {
+    if (!loading && user) {
+      // If user already logged in / exists → redirect
+      navigate("/predict");
+    }
+  }, [user, loading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
     try {
       const response = await login({ email, password });
-      console.log(response);
       setMessage("✅ Login successful!");
-      window.location.href = '/'; // Redirect to home page after successful login
+      window.location.href = '/predict'; // Redirect to home page after successful login
     } catch (error) {
       setMessage("❌ Invalid email or password.");
     }

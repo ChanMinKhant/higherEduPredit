@@ -1,84 +1,37 @@
-// import React, { useState } from 'react';
-// import { register } from '../../services/auth';
-
-// const Register: React.FC = () => {
-//     const [email, setEmail] = useState('');
-//     const [username, setUsername] = useState('');
-//     const [password, setPassword] = useState('');
-//     const [message, setMessage] = useState('');
-
-//     const handleRegister = async (e: React.FormEvent) => {
-//         e.preventDefault();
-//         setMessage('');
-//         try {
-//             const response = await register({ username,email, password });
-//             console.log(response);
-//                 setMessage('Registration successful!');
-            
-//         } catch (error) {
-//             setMessage('An error occurred.');
-//         }
-//     };
-
-//     return (
-//         <div>
-//             <h2>Register</h2>
-//             <form onSubmit={handleRegister}>
-//                 <div>
-//                     <label>Username:</label>
-//                     <input
-//                         type="text"
-//                         value={username}
-//                         onChange={e => setUsername(e.target.value)}
-//                         required
-//                     />
-//                 </div>
-//                 <div>
-//                     <label>Email:</label>
-//                     <input
-//                         type="email"
-//                         value={email}
-//                         onChange={e => setEmail(e.target.value)}
-//                         required
-//                     />
-//                 </div>
-//                 <div>
-//                     <label>Password:</label>
-//                     <input
-//                         type="password"
-//                         value={password}
-//                         onChange={e => setPassword(e.target.value)}
-//                         required
-//                     />
-//                 </div>
-//                 <div>
-// 					Don't have an account? <a href="/login">Register</a>	
-// 				</div>
-//                 <button type="submit">Register</button>
-//             </form>
-//             {message && <p>{message}</p>}
-//         </div>
-//     );
-// };
-
-// export default Register;
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { register } from "../../services/auth";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../../hooks/useUser";
 
 const Register: React.FC = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+
+  // Assuming getUser is a hook or function that returns user and loading
+  const { user, loading } = useUser();
+
+  useEffect(() => {
+    if (!loading && user) {
+      // If user already logged in / exists → redirect
+      navigate("/predict");
+    }
+  }, [user, loading, navigate]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
+    if (password.length < 8) {
+    setMessage("❌ Password must be at least 8 characters long.");
+    return;
+  }
     try {
       const response = await register({ username, email, password });
-      console.log(response);
+      // console.log(response);
       setMessage("✅ Registration successful!");
-      window.location.href = '/';
+      window.location.href = '/predict';
     } catch (error) {
       setMessage("❌ An error occurred.");
     }

@@ -22,7 +22,7 @@ const Navbar: React.FC = () => {
   return (
     <nav className="navbar">
       <div className="nav-container">
-        <h1 className="nav-title">Higher Education Access Prediction System</h1>
+        <Link to="/" className="nav-title1">Higher Education Access Prediction System</Link>
         <div className="nav-links">
           { user && <Link 
             to="/predict" 

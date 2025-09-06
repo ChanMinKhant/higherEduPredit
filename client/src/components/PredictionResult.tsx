@@ -24,17 +24,14 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
     min_samples_split: 20,
     n_estimators: 500
   });
-  console.log(prediction)
 
   React.useEffect(() => {
     const fetchBasedScore = async () => {
       try {
         const response = await getConfigs();
         const score = response.config.basedScore || 20;
-        console.log("Fetched basedScore:", score);
         setBasedScore(score);
         setConfig(response.config);
-        console.log(response.config);
       } catch (error) {
         console.error("Error fetching basedScore:", error);
         setBasedScore(20);

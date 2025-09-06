@@ -9,7 +9,6 @@ export function useUser() {
     const fetchUser = async () => {
       try {
         const currentUser = await getUser();
-        console.log(currentUser.user)
         setUser(currentUser.user);
       } catch (error) {
         console.error("Failed to fetch user:", error);

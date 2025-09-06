@@ -8,6 +8,7 @@ import PredictionForm from './pages/PredictionForm/PredictionForm';
 import RecentPrediction from './pages/RecentPrediction/RecentPrediction';
 import UserManage from './pages/UserManage/UserMange';
 import { Bounce, ToastContainer } from 'react-toastify';
+import HeroSection from './pages/Home/Home';
 
 function App() {
 
@@ -17,7 +18,7 @@ function App() {
         <Navbar />
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<div>Home</div>} />
+            <Route path="/" element={<HeroSection />} />
             
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
