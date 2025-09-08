@@ -147,6 +147,7 @@ const AdminPanel: React.FC = () => {
          type: "success", isLoading: false,  autoClose: 5000, });
       await createConfig(retrainParams);
       await fetchModelInfo();
+      await fetchDatasetStats();
     } catch (error: any) {
       showMessage(
         error.response?.data?.error || "Failed to retrain models",

@@ -9,6 +9,7 @@ print(df.head(5))
 
 # fill mean value depand on other two in G1 and G2 and G3 if 0, 
 grades = ['G1', 'G2', 'G3']
+
 df[grades] = df[grades].replace(0, np.nan)
 def fill_grades(row):
     vals = row[grades].values.astype(float)

@@ -398,7 +398,7 @@ def form_structure():
         {'name': 'sex', 'type': 'select', 'label': 'Gender', 'options': [
             {'value': 0, 'label': 'Female'}, {'value': 1, 'label': 'Male'}
         ]},
-        {'name': 'age', 'type': 'number', 'label': 'Age', 'min': 15, 'max': 22},
+        {'name': 'age', 'type': 'number', 'label': 'Age (15-21)', 'min': 15, 'max': 22},
         {'name': 'famsize', 'type': 'select', 'label': 'Family Size', 'options': [
             {'value': 0, 'label': '≤ 3 members'}, {'value': 1, 'label': '> 3 members'}
         ]},

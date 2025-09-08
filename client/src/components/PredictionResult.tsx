@@ -133,13 +133,13 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ prediction }) => {
             <div className="higher-education-item">
               <span>Yes: </span>
               <span className="higher-education-value yes">
-                {prediction.higher_education_yes}%
+                {prediction.higher_education_yes.toFixed(2)}%
               </span>
             </div>
             <div className="higher-education-item">
               <span>No: </span>
               <span className="higher-education-value no">
-                {prediction.higher_education_no}%
+                {prediction.higher_education_no.toFixed(2)}%
               </span>
             </div>
           </div>  

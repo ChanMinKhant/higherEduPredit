@@ -10,7 +10,6 @@ const pythonBaseUrl = process.env.PYTHON_URL || 'http://localhost:5000';
 
 export const makePrediction = asyncHandler(async (req, res, next) => {
     // filter later
-    console.log('first')
   try {
     const response = await axios.post(
       `${pythonBaseUrl}/api/predict`,
@@ -21,7 +20,6 @@ export const makePrediction = asyncHandler(async (req, res, next) => {
         },
       }
     );
-    console.log(response.data)
     // res.status(200).json(response.data)
 
     // save to database
