@@ -1,4 +1,3 @@
-import { Presence } from 'discord.js';
 import { Schema, model } from 'mongoose';
 
 // {

@@ -89,12 +89,13 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-top justify-center bg-gray-100 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-lg h-[350px] pb-6">
+    <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+       <div className="absolute inset-0 bg-[url('/bg.jpg')] bg-cover bg-center blur-sm -z-10"></div>
+        <div className="w-full max-w-md  rounded-2xl bg-white shadow-lg h-[400px] pb-6">
         <form
-          onSubmit={handleLogin}
-          className="flex flex-col items-center w-full p-4 justify-evenly h-full"
-        >
+      onSubmit={handleLogin}
+      className="flex flex-col items-center w-full p-16 justify-evenly h-full"
+    >
           <h2 className="text-2xl font-bold text-center text-[#9c23d9] mt-8 mb-6">
             Login
           </h2>
@@ -130,18 +131,6 @@ const Login: React.FC = () => {
           >
             Login
           </button>
-        </form>
-
-        {message && (
-          <p
-            className={`mt-4 text-center font-medium ${
-              message.includes("successful") ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {message}
-          </p>
-        )}
-
         <p className="mt-6 text-center text-gray-600 text-sm">
           Don&apos;t have an account?{" "}
           <a
@@ -151,6 +140,18 @@ const Login: React.FC = () => {
             Register
           </a>
         </p>
+        {message && (
+          <p
+            className={`mt-4 text-center font-medium ${
+              message.includes("successful") ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {message}
+          </p>
+        )}
+        </form>
+
+
       </div>
     </div>
   );

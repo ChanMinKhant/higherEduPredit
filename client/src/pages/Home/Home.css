@@ -19,13 +19,10 @@ body {
 }
 
 .hero {
-  width: 100%;
-  max-width: 1100px;
+  width: 80%;
+  max-width: 800px;
   background: var(--card);
   border-radius: 24px;
-  display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 28px;
   padding: 34px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(0, 0, 0, 0.06);
@@ -33,7 +30,7 @@ body {
 }
 
 .content {
-  padding: 14px 2px;
+  padding: 14p0x 2px;
 }
 
 .eyebrow {
@@ -65,7 +62,7 @@ h1 .accent {
   margin: 0 0 22px 0;
   color: #374151;
   font-size: 16px;
-  max-width: 66ch;
+  max-width: 60ch;
 }
 
 .cta-row {

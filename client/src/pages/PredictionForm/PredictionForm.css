@@ -103,6 +103,57 @@
   margin-bottom: 1rem;
 }
 
+/* Make the form split into two columns */
+/* .form-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+} */
+
+/* Ensure left and right groups stay aligned */
+/* .form-left, .form-right {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+} */
+
+/* .form-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+
+.form-left, .form-right {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+} */
+
+.form-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* exactly two main columns */
+  gap: 2rem;
+}
+
+.form-left, .form-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* spacing between fields */
+}
+
+/* Keep result below form */
+.prediction-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: block; /* instead of grid */
+}
+
+.result-section {
+  margin-top: 2rem;
+}
+
 @media (max-width: 768px) {
   .prediction-container {
     grid-template-columns: 1fr;

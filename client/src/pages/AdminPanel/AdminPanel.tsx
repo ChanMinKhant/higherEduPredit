@@ -173,6 +173,8 @@ const AdminPanel: React.FC = () => {
 
   return (
     <div className="admin-panel">
+      <div className="fixed inset-0 -z-20 bg-gradient-to-b from-blue-100 via-blue-200 to-blue-300 blur-sm"></div>
+
       <h1>Admin Panel</h1>
 
       {message && <div className={`message ${messageType}`}>{message}</div>}

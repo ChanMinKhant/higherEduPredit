@@ -38,14 +38,16 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-top justify-center bg-gray-100 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-lg h-[400px] pb-6">
-        
-
-        <form onSubmit={handleRegister} className="flex flex-col items-center w-full p-4 justify-evenly h-full">
-        <h2 className="text-2xl font-bold text-center text-[#9c23d9] mt-8 mb-6">
-             Create an Account
-        </h2>
+        <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+       <div className="absolute inset-0 bg-[url('/bg.jpg')] bg-cover bg-center blur-sm -z-10"></div>
+        <div className="w-full max-w-md rounded-2xl bg-white shadow-lg h-[400px] pb-6">
+        <form
+          onSubmit={handleRegister}
+          className="flex flex-col items-center w-full p-16 justify-evenly h-full"
+    >
+          <h2 className="text-2xl font-bold text-center text-[#9c23d9] mt-8 mb-6">
+              Create an Account
+          </h2>
         <div className="w-[150px] h-1 m-auto bg-[#9c23d9] mt-[-20px] rounded"></div>
           <div className="mb-4 w-[90%]">
             <label className="block text-gray-600 font-medium mb-1">
@@ -90,8 +92,15 @@ const Register: React.FC = () => {
           >
             Register
           </button>
-        </form>
-
+        <p className="mt-6 mb-4 text-center text-gray-600 text-sm">
+          Already have an account?{" "}
+          <a
+            href="/login"
+            className="text-blue-600 font-medium hover:underline"
+          >
+            Login
+          </a>
+        </p>
         {message && (
           <p
             className={`mt-4 text-center font-medium ${
@@ -101,16 +110,9 @@ const Register: React.FC = () => {
             {message}
           </p>
         )}
+        </form>
 
-        <p className="mt-6 text-center text-gray-600 text-sm">
-          Already have an account?{" "}
-          <a
-            href="/login"
-            className="text-blue-600 font-medium hover:underline"
-          >
-            Login
-          </a>
-        </p>
+
       </div>
     </div>
   );

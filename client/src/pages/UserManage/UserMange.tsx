@@ -106,6 +106,8 @@ const UserManage: React.FC = () => {
 
   return (
     <div className="user-manage">
+      <div className="fixed inset-0 -z-20 bg-gradient-to-b from-blue-100 via-blue-200 to-blue-300 blur-sm"></div>
+
       <h2 className="title">User Management</h2>
 
       <form onSubmit={handleSubmit} className="user-form">

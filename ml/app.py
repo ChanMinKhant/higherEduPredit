@@ -109,7 +109,6 @@ def health_check():
 @app.route('/api/predict', methods=['POST'])
 def predict():
     """Make predictions for a student"""
-    # print(json.dumps(request.get_json(), indent=2, ensure_ascii=False))
     try:
         data = request.get_json()
         if not data:
@@ -118,69 +117,64 @@ def predict():
         # Validate required fields
         required_fields = feature_columns
         missing_fields = [field for field in required_fields if field not in data]
-        print(missing_fields)
         if missing_fields:
             return jsonify({
                 'error': f'Missing required fields: {missing_fields}'
             }), 400
-        print('abc')
+
         # Prepare data for prediction
         X_scaled = prepare_input_for_prediction(data)
         
-        # Make predictions
+        # Make predictions for grade and pass/fail
         predicted_grade = float(regression_model.predict(X_scaled)[0])
         predicted_class = int(classification_model.predict(X_scaled)[0])
         predicted_prob = classification_model.predict_proba(X_scaled)[0].tolist()
+
+        # Add predicted grade to data
         data['G3'] = round(predicted_grade, 2)
-        # reorder columns
+
+        # Reorder columns for higher education model
         ordered_data = {col: data[col] for col in feature_columns_higher if col in data}
-        print(json.dumps(ordered_data, indent=2, ensure_ascii=False))
+        higher_X_new = pd.DataFrame([ordered_data])
+
+        # Load higher education model
         with open('./StudentUplift/student_education_model.pkl', 'rb') as f:
             higher_model = pickle.load(f)
 
-        # Load metrics (optional)
-        with open('./StudentUplift/model_metrics.pkl', 'rb') as f:
-            higher_metrics = pickle.load(f)
-
-        higher_X_new = pd.DataFrame([ordered_data])
-        higher_predictions = higher_model.predict(higher_X_new)
+        # Predict probabilities for higher education
         higher_metrics = higher_model.predict_proba(higher_X_new)
-        print("Higher Predictions:", higher_predictions)
-        print("Higher Probabilities:", higher_metrics)
-        threshold = 0.65
+        prob_yes = higher_metrics[0][1]
+        prob_no = higher_metrics[0][0]
 
-        # Binary predictions based on threshold
-        higher_predictions = [1 if prob[1] > threshold else 0 for prob in higher_metrics]
-        print("Higher Predictions:", higher_predictions)
+        # Threshold for binary decision
+        threshold = 0.68
+        if prob_yes > threshold:
+            higher_education = 'yes'
+            higher_education_yes = round(prob_yes * 100, 3)
+            higher_education_no = round(100 - higher_education_yes, 3)
+        else:
+            higher_education = 'no'
+            higher_education_no = round((prob_no+(1-threshold)) * 100, 3)
+            higher_education_yes = round(100 - higher_education_no, 3)
 
-        # Take first prediction’s probabilities
-        yes = round(higher_metrics[0][1] * 100, 3)
-        no = round(100 - yes, 3)
-
-        print("higher_education_yes %:", yes)
-        print("higher_education_no %:", no)
-
-        # Final decision using threshold
-        decision = "Yes" if higher_metrics[0][1] > threshold else "No"
-        print("Final Decision:", decision)
-
+        # Build result dictionary
         result = {
             'predicted_grade': round(predicted_grade, 2),
             'pass_fail': 'pass' if predicted_class == 1 else 'fail',
             'probability_fail': round(predicted_prob[0], 3),
             'probability_pass': round(predicted_prob[1], 3),
             'confidence': 'high' if max(predicted_prob) > 0.7 else 'moderate' if max(predicted_prob) > 0.5 else 'low',
-            'higher_education': 'yes' if higher_predictions[0] == 1 else 'no',
-            'higher_education_yes': round(higher_metrics[0][1] * 100, 3),
-            'higher_education_no': round(higher_metrics[0][0] * 100, 3)
+            'higher_education': higher_education,
+            'higher_education_yes': higher_education_yes,
+            'higher_education_no': higher_education_no
         }
         
         return jsonify(result)
-        
+    
     except Exception as e:
         print(f"Prediction error: {str(e)}")
         return jsonify({'error': str(e)}), 500
-
+    
 @app.route('/api/model/info', methods=['GET'])
 def model_info():
     """Get information about current models"""

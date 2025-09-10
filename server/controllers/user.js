@@ -21,13 +21,17 @@ export const register = asyncHandler(async (req, res, next) => {
 
     // Hash password (using bcrypt)
     const hashedPassword = await bcrypt.hash(password, 10);
+   // Check if any users exist
+    const isFirstUser = !(await User.exists({}));
 
-    // Create user (replace with your User model)
+    // Create the user
     const user = await User.create({
-        username,
-        email,
-        password: hashedPassword,
+    username,
+    email,
+    password: hashedPassword,
+    role: isFirstUser ? "admin" : "user", // Assign role based on existence
     });
+    
     // Generate JWT
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || '12345', {
         expiresIn: '7d',

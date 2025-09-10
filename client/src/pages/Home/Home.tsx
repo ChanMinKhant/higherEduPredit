@@ -6,6 +6,7 @@ export default function HeroSection() {
   return (
     <section className="hero" aria-labelledby="hero-heading">
       {/* Left Content */}
+      <div className="absolute inset-0 bg-[url('/bg.jpg')] bg-cover bg-center blur-sm -z-10"></div>
       <div className="content">
         <span className="eyebrow">Higher Education • Predictive Analytics</span>
         <h1 id="hero-heading">

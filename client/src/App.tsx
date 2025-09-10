@@ -16,7 +16,7 @@ function App() {
     <Router>
       <div className="App">
         <Navbar />
-        <main className="main-content">
+        <main>
           <Routes>
             <Route path="/" element={<HeroSection />} />
             

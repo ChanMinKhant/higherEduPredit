@@ -41,7 +41,7 @@ const PredictionForm: React.FC = () => {
   useEffect(() => {
     if (!loading && !user) {
       // If user already logged in / exists → redirect
-      navigate("/");
+      navigate("/login");
     }
   }, [user, loading, navigate]);
   
@@ -54,7 +54,7 @@ const PredictionForm: React.FC = () => {
     try {
       const response = await getFormStructure();
       setFormFields(response.fields);
-      console.log(response);
+      // console.log(response);
       
       // Initialize form data with default values
       const initialData: FormData = {};
@@ -69,7 +69,7 @@ const PredictionForm: React.FC = () => {
       });
       setFormData(initialData);
     } catch (err) {
-      toast.error("failed to get form structure");
+      // toast.error("failed to get form structure");
       setError('Failed to load form structure');
       console.error('Error fetching form structure:', err);
     }
@@ -189,105 +189,58 @@ const PredictionForm: React.FC = () => {
     return groups;
   };
 
+  if(loading){
+  return <div>loading...</div>
+  }
+
   const fieldGroups = groupFields(formFields);
+    return (
+      <div className="prediction-container">
+        {/* Absolute Gradient Background */}
+        <div className="fixed inset-0 -z-20 bg-gradient-to-b from-blue-100 via-blue-200 to-blue-300 blur-sm"></div>
 
-  return (
-    <div className="prediction-container">
-      <div className= "form-section">
-        <h2>Student Information Form</h2>
-        
-        {error && <div className="error-message">{error}</div>}
-        
-        <form onSubmit={handleSubmit} className="prediction-form">
-          <div className="form-group">
-            <h3>Basic Information</h3>
-            <div className="form-row">
-              {fieldGroups.basic.map(field => (
-                <div key={field.name} className="form-field">
-                  <label htmlFor={field.name}>{field.label}</label>
-                  {renderField(field)}
+        <div className="form-section">
+          <h2>Student Information Form</h2>
+          
+          {error && <div className="error-message">{error}</div>}
+
+            <form onSubmit={handleSubmit} className="prediction-form">
+              <div className="form-columns">
+                {/* Left column */}
+                <div className="form-left">
+                  {[...fieldGroups.basic, ...fieldGroups.education, ...fieldGroups.family].map(field => (
+                    <div key={field.name} className="form-field">
+                      <label htmlFor={field.name}>{field.label}</label>
+                      {renderField(field)}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="form-group">
-            <h3>Education Background</h3>
-            <div className="form-row">
-              {fieldGroups.education.map(field => (
-                <div key={field.name} className="form-field">
-                  <label htmlFor={field.name}>{field.label}</label>
-                  {renderField(field)}
+                {/* Right column */}
+                <div className="form-right">
+                  {[...fieldGroups.personal, ...fieldGroups.support, ...fieldGroups.academic].map(field => (
+                    <div key={field.name} className="form-field">
+                      <label htmlFor={field.name}>{field.label}</label>
+                      {renderField(field)}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          <div className="form-group">
-            <h3>Support & Activities</h3>
-            <div className="form-row">
-              {fieldGroups.support.map(field => (
-                <div key={field.name} className="form-field">
-                  <label htmlFor={field.name}>{field.label}</label>
-                  {renderField(field)}
-                </div>
-              ))}
-            </div>
-          </div>
+              <button type="submit" className="submit-button" disabled={loading1}>
+                {loading1 ? 'Predicting...' : 'Get Prediction'}
+              </button>
+            </form>
 
-          <div className="form-group">
-            <h3>Personal & Social</h3>
-            <div className="form-row">
-              {fieldGroups.personal.map(field => (
-                <div key={field.name} className="form-field">
-                  <label htmlFor={field.name}>{field.label}</label>
-                  {renderField(field)}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <h3>Family Information</h3>
-            <div className="form-row">
-              {fieldGroups.family.map(field => (
-                <div key={field.name} className="form-field">
-                  <label htmlFor={field.name}>{field.label}</label>
-                  {renderField(field)}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <h3>Academic Information</h3>
-            <div className="form-row">
-              {fieldGroups.academic.map(field => (
-                <div key={field.name} className="form-field">
-                  <label htmlFor={field.name}>{field.label}</label>
-                  {renderField(field)}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <button 
-            type="submit" 
-            className="submit-button"
-            disabled={loading1}
-          >
-            {loading1 ? 'Predicting...' : 'Get Prediction'}
-          </button>
-        </form>
-      </div>
-
-      {prediction && (
-        <div className="result-section">
-          <PredictionResult prediction={prediction} />
+            {prediction && (
+              <div className="result-section">
+                <PredictionResult prediction={prediction} />
+              </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+
 };
 
 export default PredictionForm;
